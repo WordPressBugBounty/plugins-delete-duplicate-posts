@@ -5,7 +5,7 @@ Plugin Name: Delete Duplicate Posts
 Plugin Script: delete-duplicate-posts.php
 Plugin URI: https://cleverplugins.com
 Description: Remove duplicate blogposts on your blog! Searches and removes duplicate posts and their post meta tags. You can delete posts, pages and other Custom Post Types enabled on your website.
-Version: 4.9.9
+Version: 5.0
 Author: cleverplugins.com
 Author URI: https://cleverplugins.com
 Min WP Version: 4.7
@@ -18,11 +18,11 @@ namespace DeleteDuplicatePosts;
 if ( !defined( 'ABSPATH' ) ) {
     exit;
 }
-if ( function_exists( 'ddp_fs' ) ) {
-    ddp_fs()->set_basename( false, __FILE__ );
+if ( function_exists( '\\DeleteDuplicatePosts\\ddp_fs' ) ) {
+    \DeleteDuplicatePosts\ddp_fs()->set_basename( false, __FILE__ );
 } else {
     // DO NOT REMOVE THIS IF, IT IS ESSENTIAL FOR THE `function_exists` CALL ABOVE TO PROPERLY WORK.
-    if ( !function_exists( 'ddp_fs' ) ) {
+    if ( !function_exists( '\\DeleteDuplicatePosts\\ddp_fs' ) ) {
         // Create a helper function for easy SDK access.
         function ddp_fs() {
             global $ddp_fs;
@@ -34,6 +34,7 @@ if ( function_exists( 'ddp_fs' ) ) {
                 // Include Freemius SDK.
                 require_once dirname( __FILE__ ) . '/freemius/start.php';
                 $ddp_fs = fs_dynamic_init( array(
+                    'navigation'     => 'tabs',
                     'id'             => '925',
                     'slug'           => 'delete-duplicate-posts',
                     'type'           => 'plugin',
@@ -47,7 +48,7 @@ if ( function_exists( 'ddp_fs' ) ) {
                         'is_require_payment' => false,
                     ),
                     'menu'           => array(
-                        'slug'       => 'delete-duplicate-posts.php',
+                        'slug'       => 'delete-duplicate-posts',
                         'first-path' => 'tools.php?page=delete-duplicate-posts&welcome-message=true',
                         'parent'     => array(
                             'slug' => 'tools.php',
@@ -97,9 +98,6 @@ if ( !class_exists( __NAMESPACE__ . '\\Delete_Duplicate_Posts' ) ) {
                 ddp_fs()->add_filter( 'permission_list', array(__CLASS__, 'add_freemius_extra_permission') );
             }
             global $ddp_fs;
-            $locale = get_locale();
-            $mo = plugin_dir_path( __FILE__ ) . '/languages/delete-duplicate-posts-' . $locale . '.mo';
-            load_plugin_textdomain( 'delete-duplicate-posts', false, __DIR__ . '/languages/' );
             add_action(
                 'admin_head',
                 array(__CLASS__, 'set_custom_help_content'),
@@ -109,6 +107,7 @@ if ( !class_exists( __NAMESPACE__ . '\\Delete_Duplicate_Posts' ) ) {
             self::get_options();
             add_action( 'wp_ajax_ddp_get_loglines', array(__CLASS__, 'return_loglines_ajax') );
             add_action( 'wp_ajax_ddp_get_duplicates', array(__CLASS__, 'return_duplicates_ajax') );
+            add_action( 'init', array(__CLASS__, 'do_init') );
             add_action( 'wp_ajax_ddp_delete_duplicates', array(__CLASS__, 'delete_duplicates_ajax') );
             // loads admin notices
             add_action( 'admin_menu', array($this, 'admin_menu_link') );
@@ -123,6 +122,20 @@ if ( !class_exists( __NAMESPACE__ . '\\Delete_Duplicate_Posts' ) ) {
             register_activation_hook( __FILE__, array($this, 'install') );
             add_action( 'ddp_cron', array($this, 'cleandupes') );
             add_action( 'cron_schedules', array($this, 'add_cron_intervals') );
+        }
+
+        /**
+         * do_init.
+         *
+         * @author	Lars Koudal
+         * @since	v0.0.1
+         * @version	v1.0.0	Monday, October 28th, 2024.
+         * @access	public static
+         * @return	void
+         */
+        public static function do_init() {
+            global $ddp_fs;
+            $determine_locale = determine_locale();
         }
 
         /**
@@ -174,7 +187,7 @@ if ( !class_exists( __NAMESPACE__ . '\\Delete_Duplicate_Posts' ) ) {
             // Attempt to clean duplicates and handle possible failures
             $result = self::cleandupes( true, $cleaned_posts );
             if ( !$result ) {
-                $errorMessage = 'Error deleting duplicates.';
+                $errorMessage = __( 'Error deleting duplicates.', 'delete-duplicate-posts' );
                 // Assuming $result is an array or object that could be serialized safely:
                 if ( is_array( $result ) || is_object( $result ) ) {
                     $errorData = [
@@ -198,7 +211,7 @@ if ( !class_exists( __NAMESPACE__ . '\\Delete_Duplicate_Posts' ) ) {
             // Optionally return success data
             if ( $return_data ) {
                 wp_send_json_success( array(
-                    'message' => 'Duplicates deleted successfully.',
+                    'message' => __( 'Duplicates deleted successfully.', 'delete-duplicate-posts' ),
                 ) );
             }
         }
@@ -217,7 +230,7 @@ if ( !class_exists( __NAMESPACE__ . '\\Delete_Duplicate_Posts' ) ) {
          */
         public static function return_loglines_ajax( $return_data = false ) {
             if ( !current_user_can( 'manage_options' ) ) {
-                wp_send_json_error( 'You do not have sufficient permissions to perform this action.' );
+                wp_send_json_error( __( 'You do not have sufficient permissions to perform this action.', 'delete-duplicate-posts' ) );
                 return;
             }
             check_ajax_referer( 'cp_ddp_return_loglines' );
@@ -259,7 +272,7 @@ if ( !class_exists( __NAMESPACE__ . '\\Delete_Duplicate_Posts' ) ) {
         public static function return_duplicates_ajax() {
             check_ajax_referer( 'cp_ddp_return_duplicates', true );
             if ( !current_user_can( 'manage_options' ) ) {
-                wp_send_json_error( 'You do not have sufficient permissions to perform this action.' );
+                wp_send_json_error( __( 'You do not have sufficient permissions to perform this action.', 'delete-duplicate-posts' ) );
                 return;
             }
             // Get duplicates
@@ -420,7 +433,7 @@ if ( !class_exists( __NAMESPACE__ . '\\Delete_Duplicate_Posts' ) ) {
                     if ( '' !== $wpdb->last_error ) {
                         $last_error = htmlspecialchars( $wpdb->last_error, ENT_QUOTES );
                         $json_response['lookup_error'] = htmlspecialchars( $wpdb->last_error, ENT_QUOTES );
-                        self::log( 'Look up error: ' . $last_error . ' ' . $total_dupes_query );
+                        self::log( __( 'Look up error: %s %s', 'delete-duplicate-posts' ) . $last_error . ' ' . $total_dupes_query );
                     }
                     if ( $dupes ) {
                         $json_response['dupescount'] = $total_dupes;
@@ -443,7 +456,7 @@ if ( !class_exists( __NAMESPACE__ . '\\Delete_Duplicate_Posts' ) ) {
                                     'orgtitle'     => $dupe['post_title'],
                                     'orgpermalink' => get_permalink( $dupe['save_this_post_id'] ),
                                     'status'       => $dupe['post_status'],
-                                    'why'          => 'Post ID ' . $dupe['ID'] . ' has the same title as Post ID ' . $dupe['save_this_post_id'],
+                                    'why'          => sprintf( __( 'Post ID %1$s has the same title as Post ID %2$s', 'delete-duplicate-posts' ), $dupe['ID'], $dupe['save_this_post_id'] ),
                                 );
                                 $json_response['dupes'][] = $dupedetails;
                             }
@@ -500,7 +513,13 @@ if ( !class_exists( __NAMESPACE__ . '\\Delete_Duplicate_Posts' ) ) {
                     }
                 }
                 if ( isset( $json_response['dupes'] ) ) {
-                    self::log( count( $json_response['dupes'] ) . ' duplicates found in ' . $return_duplicates_time . ' sec. ' . $statusdata . ' Mem usage: ' . self::pretty_value( memory_get_peak_usage( true ) ) );
+                    self::log(
+                        __( 'Duplicates found: %d, Time: %s sec. %s Mem usage: %s', 'delete-duplicate-posts' ),
+                        count( $json_response['dupes'] ),
+                        $return_duplicates_time,
+                        $statusdata,
+                        self::pretty_value( memory_get_peak_usage( true ) )
+                    );
                 }
             } else {
                 $json_response['msg'] = __( 'Error: Choose post types to check.', 'delete-duplicate-posts' );
@@ -515,7 +534,7 @@ if ( !class_exists( __NAMESPACE__ . '\\Delete_Duplicate_Posts' ) ) {
                 $return_duplicates_time = self::timerstop( 'return_duplicates' );
             }
             if ( isset( $json_response['dupescount'] ) ) {
-                $json_response['msg'] = number_format_i18n( $json_response['dupescount'] ) . ' duplicates found. Time: ' . esc_html( $return_duplicates_time ) . ' sec.';
+                $json_response['msg'] = sprintf( __( 'Duplicates found: %s. Time: %s sec.', 'delete-duplicate-posts' ), number_format_i18n( $json_response['dupescount'] ), esc_html( $return_duplicates_time ) );
             }
             if ( $return ) {
                 return $json_response;
@@ -850,7 +869,6 @@ if ( !class_exists( __NAMESPACE__ . '\\Delete_Duplicate_Posts' ) ) {
             if ( is_object( $screen ) && 'tools_page_delete-duplicate-posts' === $screen->id ) {
                 $pluginver = self::get_plugin_version();
                 wp_enqueue_script( 'jquery' );
-                wp_enqueue_script( 'jquery-ui-tabs' );
                 wp_enqueue_style(
                     'delete-duplicate-posts',
                     plugins_url( '/css/delete-duplicate-posts-min.css', __FILE__ ),
@@ -883,11 +901,29 @@ if ( !class_exists( __NAMESPACE__ . '\\Delete_Duplicate_Posts' ) ) {
                     true
                 );
                 $js_vars = array(
-                    'nonce'                => wp_create_nonce( 'cp_ddp_return_duplicates' ),
-                    'loglines_nonce'       => wp_create_nonce( 'cp_ddp_return_loglines' ),
-                    'deletedupes_nonce'    => wp_create_nonce( 'cp_ddp_delete_loglines' ),
-                    'text_areyousure'      => __( 'Are you sure you want to delete duplicates? There is no undo feature.', 'delete-duplicate-posts' ),
-                    'text_selectsomething' => __( 'You have to select which duplicates to delete. Tip: You can click the top or bottom checkbox to select all.', 'delete-duplicate-posts' ),
+                    'nonce'                  => wp_create_nonce( 'cp_ddp_return_duplicates' ),
+                    'loglines_nonce'         => wp_create_nonce( 'cp_ddp_return_loglines' ),
+                    'deletedupes_nonce'      => wp_create_nonce( 'cp_ddp_delete_loglines' ),
+                    'text_areyousure'        => __( 'Are you sure you want to delete duplicates? There is no undo feature.', 'delete-duplicate-posts' ),
+                    'text_selectsomething'   => __( 'You have to select which duplicates to delete. Tip: You can click the top or bottom checkbox to select all.', 'delete-duplicate-posts' ),
+                    'fromUrlTitle'           => __( 'From URL', 'delete-duplicate-posts' ),
+                    'targetUrlTitle'         => __( 'Target URL', 'delete-duplicate-posts' ),
+                    'refreshingText'         => __( 'Refreshing...', 'delete-duplicate-posts' ),
+                    'refreshText'            => __( 'Refresh', 'delete-duplicate-posts' ),
+                    'errorDetailsText'       => __( 'Error details: ', 'delete-duplicate-posts' ),
+                    'redirectsErrorText'     => __( 'Redirects DataTables error occurred. ', 'delete-duplicate-posts' ),
+                    'processingMessage'      => __( 'Looking for duplicates', 'delete-duplicate-posts' ),
+                    'requestTimeText'        => __( 'Request: ', 'delete-duplicate-posts' ),
+                    'failedToLoadDataText'   => __( 'Failed to load data. ', 'delete-duplicate-posts' ),
+                    'duplicateTitle'         => __( 'Duplicate', 'delete-duplicate-posts' ),
+                    'originalTitle'          => __( 'Original', 'delete-duplicate-posts' ),
+                    'selectRowAlert'         => __( 'Please select at least one row to delete.', 'delete-duplicate-posts' ),
+                    'serverResponseText'     => __( 'Response from the server: ', 'delete-duplicate-posts' ),
+                    'errorOccurredText'      => __( 'An error occurred: ', 'delete-duplicate-posts' ),
+                    'deleteSelectedText'     => __( 'Delete Selected', 'delete-duplicate-posts' ),
+                    'selectVisibleText'      => __( 'Select Visible', 'delete-duplicate-posts' ),
+                    'selectNoneText'         => __( 'Select None', 'delete-duplicate-posts' ),
+                    'somethingWentWrongText' => __( 'Something went wrong.', 'delete-duplicate-posts' ),
                 );
                 wp_localize_script( 'delete-duplicate-posts', 'cp_ddp', $js_vars );
                 wp_enqueue_script( 'delete-duplicate-posts' );
@@ -1169,42 +1205,47 @@ if ( !class_exists( __NAMESPACE__ . '\\Delete_Duplicate_Posts' ) ) {
                 self::install( false );
                 self::log( 'Reinstalled databases' );
             }
-            $table_name = $wpdb->prefix . 'posts';
+            // $table_name = $wpdb->prefix . 'posts';
             $pluginfo = get_plugin_data( __FILE__ );
-            $version = $pluginfo['Version'];
-            $name = $pluginfo['Name'];
+            // $version  = $pluginfo['Version'];
+            // $name     = $pluginfo['Name'];
             $options = self::get_options();
-            ?>
-
-
-
-
-
-
-			<?php 
             $css_classes = ' free';
             $display_ads = true;
             ?>
 
-			<div class="wrap<?php 
+			<div class="wrap fs-section <?php 
             echo esc_attr( $css_classes );
             ?>">
-				<h2>Delete Duplicate Posts <span>v. <?php 
+				<h1>Delete Duplicate Posts <span>v. <?php 
             echo esc_html( self::get_plugin_version() );
-            ?></span></h2>
+            ?></span></h1>
 				<?php 
             $totaldeleted = get_option( 'ddp_deleted_duplicates' );
+            // check the code for get param 'welcome-message' er sat til true
             ?>
+
+				<h2 class="nav-tab-wrapper">
+					<a href="#duplicates-tab" class="nav-tab fs-tab nav-tab-active home"><?php 
+            esc_html_e( 'Duplicates', 'delete-duplicate-posts' );
+            ?></a>
+					<a href="#log-tab" class="nav-tab"><?php 
+            esc_html_e( 'Log', 'delete-duplicate-posts' );
+            ?></a>
+					<a href="#settings-tab" class="nav-tab"><?php 
+            esc_html_e( 'Settings', 'delete-duplicate-posts' );
+            ?></a>
+					<a href="#redirects-tab" class="nav-tab<?php 
+            echo ( $ddp_fs->is__premium_only() && $ddp_fs->can_use_premium_code() ? '' : ' pro' );
+            ?>"><?php 
+            esc_html_e( 'Redirects', 'delete-duplicate-posts' );
+            ?></a>
+				</h2>
+
 				<div class="ddp_content_wrapper">
 					<div class="ddp_content_cell">
 						<div id="delete-duplicate-posts-tabs">
-							<ul>
-								<li><a href="#duplicates-tab">Duplicates</a></li>
-								<li><a href="#log-tab">Log</a></li>
-								<li><a href="#settings-tab">Settings</a></li>
-								<li class="pro"><a href="#redirects-tab">Redirects</a></li>
-							</ul>
-							<div id="duplicates-tab">
+							<div id="duplicates-tab" class="tab-content">
 								<div id="ddp-dashboard">
 									<?php 
             if ( $options['ddp_enabled'] ) {
@@ -1254,7 +1295,6 @@ if ( !class_exists( __NAMESPACE__ . '\\Delete_Duplicate_Posts' ) ) {
 												<a href="https://wordpress.org/support/plugin/delete-duplicate-posts/reviews/?filter=5#new-post" class="button-secondary button button-small" target="_blank" rel="noopener"><?php 
                 esc_html_e( 'Ok, you deserve it', 'delete-duplicate-posts' );
                 ?></a>
-										
 											</p>
 										</div>
 									<?php 
@@ -1263,7 +1303,7 @@ if ( !class_exists( __NAMESPACE__ . '\\Delete_Duplicate_Posts' ) ) {
 								</div><!-- #dashboard -->
 							</div>
 
-							<div id="log-tab">
+							<div id="log-tab" class="tab-content" style="display: none;">
 								<div id="log">
 									<h3><?php 
             esc_html_e( 'The Log', 'delete-duplicate-posts' );
@@ -1283,21 +1323,7 @@ if ( !class_exists( __NAMESPACE__ . '\\Delete_Duplicate_Posts' ) ) {
 								</p>
 							</div>
 
-							<div id="redirects-tab" class="pro">
-								<h3>Redirects</h3>
-								<?php 
-            $output = '<p>Redirects is a feature in <a href="https://cleverplugins.com/delete-duplicate-posts/" target="_blank" rel="noopener">the premium version</a></p>';
-            echo wp_kses( $output, array(
-                'p' => array(),
-                'a' => array(
-                    'href'   => array(),
-                    'target' => array(),
-                    'rel'    => array(),
-                ),
-            ) );
-            ?>
-							</div>
-							<div id="settings-tab">
+							<div id="settings-tab" class="tab-content" style="display: none;">
 								<div id="ddp-configuration">
 									<h3><?php 
             esc_html_e( 'Settings', 'delete-duplicate-posts' );
@@ -1308,7 +1334,9 @@ if ( !class_exists( __NAMESPACE__ . '\\Delete_Duplicate_Posts' ) ) {
             if ( $nextscheduled ) {
                 ?>
 									<div class="notice notice-info is-dismissible">
-										<h3><span class="dashicons dashicons-saved"></span> Automatically Deleting Duplicates</h3>
+										<h3><span class="dashicons dashicons-saved"></span> <?php 
+                esc_html_e( 'Automatically Deleting Duplicates', 'delete-duplicate-posts' );
+                ?></h3>
 										<?php 
                 echo '<p class="cronstatus center">' . esc_html__( 'You have enabled automatic deletion, so I am running on automatic. I will take care of everything...', 'delete-duplicate-posts' ) . '</p>';
                 echo '<p class="center">';
@@ -1440,7 +1468,7 @@ if ( !class_exists( __NAMESPACE__ . '\\Delete_Duplicate_Posts' ) ) {
 																		<?php 
                         echo esc_html( $key . ' (' . $st->label . ')' );
                         if ( 'trash' === $key ) {
-                            echo ' <small>Warning, enabling this can give false results. Only enable if you know what you are doing.</small>';
+                            echo ' <small>' . esc_html__( 'Warning: Enabling this can give false results. Only enable if you know what you are doing.', 'delete-duplicate-posts' ) . '</small>';
                         }
                         ?>
 																	</label>
@@ -1717,18 +1745,54 @@ if ( !class_exists( __NAMESPACE__ . '\\Delete_Duplicate_Posts' ) ) {
 									</table>
 								</form>
 								</div><!-- #configuration -->
-
-
-
 							</div>
+
+
+							<div id="redirects-tab" class="tab-content<?php 
+            echo ( $ddp_fs->is__premium_only() && $ddp_fs->can_use_premium_code() ? '' : ' pro' );
+            ?>" style="display: none;">
+								<?php 
+            if ( $ddp_fs->is__premium_only() && $ddp_fs->can_use_premium_code() ) {
+                ?>
+									<h3><?php 
+                esc_html_e( 'Redirects', 'delete-duplicate-posts' );
+                ?></h3>
+									<p><?php 
+                esc_html_e( 'This table shows all redirects created by the plugin.', 'delete-duplicate-posts' );
+                ?></p>
+									<table id="ddp_redirtable" class="wp-list-table widefat fixed striped table-view-list">
+										<thead>
+											<tr>
+												<th><?php 
+                esc_html_e( 'ID', 'delete-duplicate-posts' );
+                ?></th>
+												<th><?php 
+                esc_html_e( 'From URL', 'delete-duplicate-posts' );
+                ?></th>
+												<th><?php 
+                esc_html_e( 'Target URL', 'delete-duplicate-posts' );
+                ?></th>
+											</tr>
+										</thead>
+										<tbody>
+											<!-- DataTables will populate this -->
+										</tbody>
+									</table>
+								<?php 
+            } else {
+                ?>
+									<h3><?php 
+                esc_html_e( 'Redirects', 'delete-duplicate-posts' );
+                ?></h3>
+									<p><?php 
+                esc_html_e( 'Redirects are a premium feature. Please upgrade to access this functionality.', 'delete-duplicate-posts' );
+                ?></p>
+								<?php 
+            }
+            ?>
+							</div>
+
 						</div>
-						<script type="text/javascript">
-							jQuery(document).ready(function($) {
-								$('#delete-duplicate-posts-tabs').tabs();
-							});
-						</script>
-
-
 					</div>
 
 					<?php 
@@ -1743,7 +1807,48 @@ if ( !class_exists( __NAMESPACE__ . '\\Delete_Duplicate_Posts' ) ) {
 
 
 
+			<script>
+				jQuery(document).ready(function($) {
+					const navTabWrapper = $('.nav-tab-wrapper');
+					const currentTabs = $('.nav-tab-wrapper a');
 
+					currentTabs.each(function() {
+						$(this).on('click', function(e) {
+							const href = $(this).attr('href');
+							console.log('Clicked tab href:', href);
+
+							try {
+								if (!href.startsWith('#')) {
+									e.preventDefault(); // Prevent default tab behavior for full URLs
+									window.location.href = href; // Load the page to the URL in the same window
+								} else {
+									e.preventDefault(); // Prevent default anchor behavior
+									console.log('Switching to tab:', href);
+
+									// Switch as a regular tab for href starting with '#'
+									currentTabs.removeClass('nav-tab-active');
+									$(this).addClass('nav-tab-active');
+
+									// Hide all tab content
+									$('.tab-content').hide();
+
+									// Show the content for the clicked tab
+									$(href).show();
+								}
+							} catch (error) {
+								console.error('Error occurred:', error);
+							}
+						});
+					});
+
+					// Initially hide all tab content except the active one
+					$('.tab-content').hide();
+					$('.nav-tab-active').each(function() {
+						const activeHref = $(this).attr('href');
+						$(activeHref).show();
+					});
+				});
+			</script>
 
 
 

@@ -30,6 +30,15 @@ if ( $ddp_deleted_duplicates ) {
 }
 ?>
 
+	<?php 
+if ( ddp_fs()->is_not_paying() ) {
+    // Adds a marketing sections with a link to in-dashboard pricing page.
+    echo '<section><h1>Awesome Features</h1>';
+    echo sprintf( '<a href="%s">Upgrade Now!</a>', ddp_fs()->get_upgrade_url() );
+    echo '</section>';
+}
+?>
+
 	<div class="sidebarrow">
 		<p class="warning">
 			<?php 
@@ -52,7 +61,7 @@ echo esc_html( $my_current_user->user_email );
 				<input type="hidden" name="fields[signupsource]" value="PluginInstall">
 				<input type="hidden" name="ml-submit" value="1">
 				<input type="hidden" name="anticsrf" value="true">
-				<button type="submit" class="button button-primary button-small">Subscribe</button>
+				<button type="submit" class="button button-primary">Subscribe</button>
 
 			</form>
 			<p class="ppolicy">You can unsubscribe anytime. For more details, review our <a href="https://cleverplugins.com/privacy-policy/" target="_blank" class="privacy-policy" rel="noopener">Privacy Policy</a>.</p>

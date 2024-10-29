@@ -1,0 +1,448 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n==1) ? 0 : 1;\n"
+"X-Generator: Poedit 3.5\n"
+
+#: delete-duplicate-posts.php:1982 sidebar.php:28
+#, php-format
+msgid "%s duplicates deleted!"
+msgstr "%s Duplikate gelöscht!"
+
+#: delete-duplicate-posts.php:1367
+#, php-format
+msgid "A total of %1$s duplicate posts were deleted in %2$s sec."
+msgstr "Insgesamt wurden %1$s doppelte Beiträge in %2$s Sekunden gelöscht."
+
+#: delete-duplicate-posts.php:1416
+#, php-format
+msgid "A total of %s duplicates were deleted."
+msgstr "Insgesamt wurden %s Duplikate gelöscht."
+
+#: delete-duplicate-posts.php:255
+msgid "An error occurred while deleting redirects."
+msgstr "Beim Löschen von Weiterleitungen ist ein Fehler aufgetreten."
+
+#: delete-duplicate-posts.php:1539
+msgid "Are you sure you want to delete duplicates? There is no undo feature."
+msgstr "Sind Sie sicher, dass Sie Duplikate löschen wollen? Es gibt keine Rückgängig-Funktion."
+
+#: delete-duplicate-posts.php:1294
+msgid "Automatic CRON job running."
+msgstr "Automatischer CRON-Auftrag läuft."
+
+#: delete-duplicate-posts.php:2295
+msgid "Automatically 301 redirects deleted posts to the original."
+msgstr "Gelöschte Beiträge werden automatisch per 301 auf das Original umgeleitet."
+
+#: delete-duplicate-posts.php:2024
+msgid "Automatically Deleting Duplicates"
+msgstr "Automatisches Löschen von Duplikaten"
+
+#: delete-duplicate-posts.php:2101
+msgid "Choose which post types to scan for duplicates."
+msgstr "Wählen Sie aus, welche Beitragstypen nach Duplikaten durchsucht werden sollen."
+
+#: delete-duplicate-posts.php:2320
+msgid "Clean duplicates automatically."
+msgstr "Duplikate automatisch entfernen."
+
+#: delete-duplicate-posts.php:306
+msgid "Cleaning duplicates"
+msgstr "Duplikate bereinigen"
+
+#: sidebar.php:112
+msgid "Click here"
+msgstr "Hier klicken"
+
+#: delete-duplicate-posts.php:2209
+msgid "Compare by any meta tag."
+msgstr "Vergleichen Sie nach jedem Meta-Tag."
+
+#: delete-duplicate-posts.php:2208
+msgid "Compare by meta tag"
+msgstr "Vergleich nach Meta-Tag"
+
+#: delete-duplicate-posts.php:2194
+msgid "Compare by title (default)"
+msgstr "Nach Titel vergleichen (Standard)"
+
+#: delete-duplicate-posts.php:2187
+msgid "Comparison Method"
+msgstr "Vergleichsmethode"
+
+#: delete-duplicate-posts.php:1125
+#, php-format
+msgid "Created %1$s redirect from %2$s to %3$s"
+msgstr "Erstellt %1$s Umleitung von %2$s nach %3$s"
+
+#: delete-duplicate-posts.php:1360
+#, php-format
+msgid "DEBUG: Deleted %1$s %2$s (id: %3$s) in %4$s sec."
+msgstr "DEBUG: Gelöscht %1$s %2$s (id: %3$s) in %4$s sec."
+
+#: delete-duplicate-posts.php:209
+#, php-format
+msgid "DEBUG: Redirected from %1$s to %2$s"
+msgstr "DEBUG: Umgeleitet von %1$s nach %2$s"
+
+#: delete-duplicate-posts.php:1395
+#, php-format
+msgid "DEBUG: Sending email to: %s"
+msgstr "DEBUG: Senden einer E-Mail an: %s"
+
+#: delete-duplicate-posts.php:1383
+msgid "Delete Duplicate Posts"
+msgstr "Doppelte Beiträge löschen"
+
+#: delete-duplicate-posts.php:2306
+msgid "Delete Duplicates Automatically"
+msgstr "Duplikate automatisch löschen"
+
+#: delete-duplicate-posts.php:2251
+msgid "Delete which posts?:"
+msgstr "Welche Stellen löschen?"
+
+#: delete-duplicate-posts.php:262
+#, php-format
+msgid "Deleted %d redirects."
+msgstr "Gelöschte %d Umleitungen."
+
+#: delete-duplicate-posts.php:1390
+msgid "Deleted Duplicate Posts Status"
+msgstr "Status der gelöschten doppelten Beiträge"
+
+#: delete-duplicate-posts.php:1927
+msgid "Duplicates"
+msgstr "Duplikate"
+
+#: delete-duplicate-posts.php:2411
+msgid "Email recipient:"
+msgstr "Empfänger der E-Mail:"
+
+#: delete-duplicate-posts.php:2285
+msgid "Enable 301 redirects?:"
+msgstr "Aktivieren Sie 301-Weiterleitungen:"
+
+#: delete-duplicate-posts.php:2311
+msgid "Enable automatic deletion?:"
+msgstr "Automatische Löschung aktivieren?:"
+
+#: delete-duplicate-posts.php:2431
+msgid "Enable debug logging?:"
+msgstr "Debug-Protokollierung aktivieren?:"
+
+#: delete-duplicate-posts.php:794
+msgid "Error, choose which meta_key to look for duplicate values in."
+msgstr "Fehler, wählen Sie, in welchem meta_key nach doppelten Werten gesucht werden soll."
+
+#: delete-duplicate-posts.php:1052
+msgid "Error: Choose post types to check."
+msgstr "Fehler: Wählen Sie die zu prüfenden Beitragstypen."
+
+#: delete-duplicate-posts.php:399
+msgid "Error: Log is empty.. do something :-)"
+msgstr "Fehler: Log ist leer... tu was :-)"
+
+#: delete-duplicate-posts.php:1443
+msgid "Every 10 minutes"
+msgstr "Alle 10 Minuten"
+
+#: delete-duplicate-posts.php:1447
+msgid "Every 15 minutes"
+msgstr "Alle 15 Minuten"
+
+#: delete-duplicate-posts.php:1451
+msgid "Every 30 minutes"
+msgstr "Alle 30 Minuten"
+
+#: delete-duplicate-posts.php:1439
+msgid "Every 5 minutes"
+msgstr "Alle 5 Minuten"
+
+#: delete-duplicate-posts.php:2461
+msgid "From URL"
+msgstr "Von URL"
+
+#: delete-duplicate-posts.php:1754
+msgid "Help! Something was deleted that was not supposed to be deleted!"
+msgstr "Hilfe! Es wurde etwas gelöscht, das nicht gelöscht werden sollte!"
+
+#: delete-duplicate-posts.php:1751
+msgid "Helps you clean duplicate posts from your blog. The plugin checks for blogposts on your blog with the same title."
+msgstr "Hilft Ihnen, doppelte Beiträge aus Ihrem Blog zu entfernen. Das Plugin sucht nach Blogposts in Ihrem Blog mit demselben Titel."
+
+#: delete-duplicate-posts.php:1988
+#, php-format
+msgid "Hey, I noticed this plugin has deleted %s duplicate posts for you - that's awesome! Could you please do me a BIG favor and give it a 5-star rating on WordPress? Just to help us spread the word and boost our motivation."
+msgstr "Hey, ich habe bemerkt, dass dieses Plugin %s doppelte Beiträge für Sie gelöscht hat - das ist großartig! Könntest du mir bitte einen GROSSEN Gefallen tun und ihm eine 5-Sterne-Bewertung auf WordPress geben? Nur um uns zu helfen, das Wort zu verbreiten und unsere Motivation zu steigern."
+
+#: delete-duplicate-posts.php:1380
+#, php-format
+msgid "Hi Admin, I have deleted <strong>%1$d</strong> duplicated posts on your blog, %2$s."
+msgstr "Hallo Admin, ich habe <strong>%1$d</strong> doppelte Beiträge in deinem Blog gelöscht, %2$s."
+
+#: delete-duplicate-posts.php:2326
+msgid "How many:"
+msgstr "Wie viele:"
+
+#: delete-duplicate-posts.php:2364
+msgid "How often?:"
+msgstr "Wie oft?"
+
+#: delete-duplicate-posts.php:2385
+msgid "How often should the cron job run?"
+msgstr "Wie oft soll der Cron-Job laufen?"
+
+#: delete-duplicate-posts.php:2460
+msgid "ID"
+msgstr "ID"
+
+#: delete-duplicate-posts.php:1755
+msgid "I am sorry for that, I can only recommend you restore the database you took just before you ran this plugin."
+msgstr "Das tut mir leid, ich kann Ihnen nur empfehlen, die Datenbank wiederherzustellen, die Sie kurz vor der Ausführung des Plugins erstellt haben."
+
+#: delete-duplicate-posts.php:2357
+msgid "If you have many duplicates, the plugin might time out before finding them all. Try limiting the amount of duplicates here. Default: Unlimited."
+msgstr "Wenn Sie viele Duplikate haben, kann es sein, dass das Plugin zu lange braucht, bis es alle gefunden hat. Versuchen Sie hier, die Anzahl der Duplikate zu begrenzen. Voreinstellung: Unbegrenzt."
+
+#: delete-duplicate-posts.php:1756
+msgid "If you run this plugin, manually or automatically, it is at your OWN risk!"
+msgstr "Wenn Sie dieses Plugin manuell oder automatisch ausführen, geschieht dies auf Ihr EIGENES Risiko!"
+
+#: delete-duplicate-posts.php:328
+msgid "Invalid duplicates selected."
+msgstr "Ungültige Duplikate ausgewählt."
+
+#: delete-duplicate-posts.php:1753
+msgid "It also has a nice feature that can send you an e-mail when Delete Duplicate Posts finds and deletes something (if you have turned on the CRON feature)."
+msgstr "Es gibt auch eine nette Funktion, die Ihnen eine E-Mail schickt, wenn Delete Duplicate Posts etwas findet und löscht (wenn Sie die CRON-Funktion aktiviert haben)."
+
+#: delete-duplicate-posts.php:1752
+msgid "It can run automatically via WordPress's own internal CRON-system, or you can run it automatically."
+msgstr "Es kann automatisch über das WordPress-interne CRON-System laufen, oder Sie können es automatisch ausführen lassen."
+
+#: delete-duplicate-posts.php:2264
+msgid "Keep latest"
+msgstr "Aktuell halten"
+
+#: delete-duplicate-posts.php:2259
+msgid "Keep oldest"
+msgstr "Älteste behalten"
+
+#: delete-duplicate-posts.php:2267
+msgid "Keep the oldest or the latest version of duplicates? Default is keeping the oldest, and deleting any subsequent duplicate posts"
+msgstr "Die älteste oder die neueste Version von Duplikaten behalten? Standardmäßig wird die älteste Version beibehalten und alle nachfolgenden doppelten Beiträge werden gelöscht."
+
+#: delete-duplicate-posts.php:1928
+msgid "Log"
+msgstr "Protokoll"
+
+#: delete-duplicate-posts.php:2195
+msgid "Looks at the title of the post itself."
+msgstr "Sieht sich den Titel des Beitrags selbst an."
+
+#: delete-duplicate-posts.php:1385
+msgid "Made by"
+msgstr "Hergestellt von"
+
+#: delete-duplicate-posts.php:1296
+msgid "Manually cleaning."
+msgstr "Manuelle Reinigung."
+
+#: delete-duplicate-posts.php:2030
+#, php-format
+msgid "Next automated check %1$s. Current time %2$s"
+msgstr "Nächste automatische Prüfung %1$s. Aktuelle Uhrzeit %2$s"
+
+#: delete-duplicate-posts.php:311
+msgid "No duplicates were selected?"
+msgstr "Es wurden keine Duplikate ausgewählt?"
+
+#: delete-duplicate-posts.php:2333
+msgid "No limit"
+msgstr "Keine Begrenzung"
+
+#: delete-duplicate-posts.php:240
+msgid "No redirects selected for deletion."
+msgstr "Keine Weiterleitungen zum Löschen ausgewählt."
+
+#: delete-duplicate-posts.php:270
+msgid "No valid redirects selected for deletion."
+msgstr "Keine gültigen Weiterleitungen zum Löschen ausgewählt."
+
+#: delete-duplicate-posts.php:1404
+#, php-format
+msgid "Not a valid email %s."
+msgstr "Keine gültige E-Mail %s."
+
+#: delete-duplicate-posts.php:1992
+msgid "Ok, you deserve it"
+msgstr "Ok, du hast es verdient"
+
+#: sidebar.php:131
+msgid "Our other plugins"
+msgstr "Unsere anderen Plugins"
+
+#: delete-duplicate-posts.php:1590
+msgid "Plugin activated."
+msgstr "Plugin aktiviert."
+
+#: delete-duplicate-posts.php:2107
+msgid "Post status"
+msgstr "Poststatus"
+
+#: sidebar.php:150
+msgid "Recreate Databases"
+msgstr "Datenbanken wiederherstellen"
+
+#: delete-duplicate-posts.php:1930 delete-duplicate-posts.php:2455
+#: delete-duplicate-posts.php:2470
+msgid "Redirects"
+msgstr "Leitet  um."
+
+#: delete-duplicate-posts.php:2471
+msgid "Redirects are a premium feature. Please upgrade to access this functionality."
+msgstr "Weiterleitungen sind eine Premium-Funktion. Bitte upgraden Sie, um diese Funktion zu nutzen."
+
+msgid "Remove duplicate blogposts on your blog! Searches and removes duplicate posts and their post meta tags. You can delete posts, pages and other Custom Post Types enabled on your website."
+msgstr "Entfernen Sie doppelte Blogposts in Ihrem Blog! Sucht und entfernt doppelte Beiträge und deren Meta-Tags. Sie können Beiträge, Seiten und andere auf Ihrer Website aktivierte benutzerdefinierte Beitragstypen löschen."
+
+#: delete-duplicate-posts.php:1200
+msgid "Rendering Help Scouts beacon for easy help and support"
+msgstr "Rendering Help Scouts Leuchtfeuer für einfache Hilfe und Unterstützung"
+
+#: delete-duplicate-posts.php:2010
+msgid "Reset log"
+msgstr "Protokoll zurücksetzen"
+
+#: delete-duplicate-posts.php:2445
+msgid "Save Settings"
+msgstr "Einstellungen speichern"
+
+#: delete-duplicate-posts.php:2395
+msgid "Send status mail?:"
+msgstr "Statusmeldung senden?:"
+
+#: delete-duplicate-posts.php:2404
+msgid "Sends a status email if duplicates have been found."
+msgstr "Sendet eine Status-E-Mail, wenn Duplikate gefunden wurden."
+
+#: delete-duplicate-posts.php:1724 delete-duplicate-posts.php:1929
+#: delete-duplicate-posts.php:2017
+msgid "Settings"
+msgstr "Einstellungen"
+
+#: delete-duplicate-posts.php:1879
+msgid "Settings saved."
+msgstr "Gespeicherte Einstellungen."
+
+#: delete-duplicate-posts.php:2440
+msgid "Should only be enabled if debugging a problem."
+msgstr "Sollte nur aktiviert werden, wenn Sie ein Problem beheben wollen."
+
+#: delete-duplicate-posts.php:1400
+#, php-format
+msgid "Status email sent to %s."
+msgstr "Status-E-Mail an %s gesendet."
+
+#: sidebar.php:147
+msgid "Support Forum on WordPress.org"
+msgstr "Support-Forum auf WordPress.org"
+
+#: delete-duplicate-posts.php:2462
+msgid "Target URL"
+msgstr "Ziel-URL"
+
+#: delete-duplicate-posts.php:2003
+msgid "The Log"
+msgstr "Das Logbuch"
+
+#: delete-duplicate-posts.php:1889
+msgid "The log was cleared."
+msgstr "Das Protokoll wurde geleert."
+
+#: delete-duplicate-posts.php:2358
+msgid "This only applies to automatic (CRON) jobs."
+msgstr "Dies gilt nur für automatische (CRON) Aufträge."
+
+#: delete-duplicate-posts.php:2456
+msgid "This table shows all redirects created by the plugin."
+msgstr "Diese Tabelle zeigt alle vom Plugin erstellten Umleitungen."
+
+#: delete-duplicate-posts.php:1748
+msgid "Usage and FAQ"
+msgstr "Verwendung und FAQ"
+
+#: delete-duplicate-posts.php:2151
+msgid "Warning: Enabling this can give false results. Only enable if you know what you are doing."
+msgstr "Warnung: Die Aktivierung dieser Option kann zu falschen Ergebnissen führen. Aktivieren Sie diese Funktion nur, wenn Sie wissen, was Sie tun."
+
+#: delete-duplicate-posts.php:1757
+msgid "We have done our best to avoid deleting something that should not be deleted, but if it happens, there is nothing we can do to help you."
+msgstr "Wir haben unser Bestes getan, um zu vermeiden, dass etwas gelöscht wird, das nicht gelöscht werden sollte, aber wenn es doch passiert, können wir nichts tun, um Ihnen zu helfen."
+
+#: sidebar.php:50
+msgid "We recommend you always make a backup before running this tool."
+msgstr "Wir empfehlen Ihnen, immer eine Sicherungskopie zu erstellen, bevor Sie dieses Tool ausführen."
+
+#: delete-duplicate-posts.php:1750
+msgid "What does this plugin do?"
+msgstr "Was macht dieses Plugin?"
+
+#: delete-duplicate-posts.php:2045
+msgid "Which post types?:"
+msgstr "Welche Beitragstypen?"
+
+#: delete-duplicate-posts.php:2417
+msgid "Who should get the notification email."
+msgstr "Wer soll die Benachrichtigungs-E-Mail erhalten?"
+
+#: delete-duplicate-posts.php:1788 delete-duplicate-posts.php:1885
+#: delete-duplicate-posts.php:1895
+msgid "Whoops! Some error occured, try again, please!"
+msgstr "Huch! Es ist ein Fehler aufgetreten, bitte versuchen Sie es erneut!"
+
+#: delete-duplicate-posts.php:1795
+msgid "Whoops! There was a problem with the data you posted. Please go back and try again."
+msgstr "Huch! Es gab ein Problem mit den Daten, die Sie gepostet haben. Bitte gehen Sie zurück und versuchen Sie es erneut."
+
+#: delete-duplicate-posts.php:1382
+msgid "You are receiving this e-mail because you have turned on e-mail notifications by the plugin"
+msgstr "Sie erhalten diese E-Mail, weil Sie die E-Mail-Benachrichtigung durch das Plugin aktiviert haben"
+
+#: delete-duplicate-posts.php:235 delete-duplicate-posts.php:298
+msgid "You do not have sufficient permissions to perform this action."
+msgstr "Sie verfügen nicht über ausreichende Berechtigungen, um diese Aktion durchzuführen."
+
+#: delete-duplicate-posts.php:2026
+msgid "You have enabled automatic deletion, so I am running on automatic. I will take care of everything..."
+msgstr "Sie haben die automatische Löschung aktiviert, also läuft sie bei mir automatisch. Ich werde mich um alles kümmern..."
+
+#: delete-duplicate-posts.php:1540
+msgid "You have to select which duplicates to delete. Tip: You can click the top or bottom checkbox to select all."
+msgstr "Sie müssen auswählen, welche Duplikate Sie löschen möchten. Tipp: Sie können auf das obere oder untere Kontrollkästchen klicken, um alle auszuwählen."
+
+#: delete-duplicate-posts.php:1207
+msgid "Your email is added to cleverplugins.com newsletter. Unsubscribe any time."
+msgstr "Ihre E-Mail wird in den Newsletter von cleverplugins.com aufgenommen. Sie können sich jederzeit wieder abmelden."
+
+#: delete-duplicate-posts.php:2089
+#, php-format
+msgid "(%s total found)"
+msgstr "(%s insgesamt gefunden)"
+
+#: delete-duplicate-posts.php:1385
+msgid "cleverplugins.com"
+msgstr "cleverplugins.de"
+
+msgid "https://cleverplugins.com"
+msgstr "https://cleverplugins.com"

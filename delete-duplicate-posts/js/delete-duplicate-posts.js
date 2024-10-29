@@ -23,8 +23,8 @@ jQuery(document).ready(function ($) {
 		},
 		"columns": [
 			{ "data": "ID", "visible": false},
-			{ "data": "from_url", "title": "From URL" },
-			{ "data": "target_url", "title": "Target URL" }
+{ "data": "from_url", "title": cp_ddp.fromUrlTitle },
+{ "data": "target_url", "title": cp_ddp.targetUrlTitle }
 		],
 		"select": {
 			style: 'multi'
@@ -35,13 +35,12 @@ jQuery(document).ready(function ($) {
 				text: 'Refresh',
 				action: function ( e, dt, node, config ) {
 					var $button = $(node);
-					$button.prop('disabled', true).text('Refreshing...');
+					$button.prop('disabled', true).text(cp_ddp.refreshingText);
 					dt.ajax.reload(function() {
-						$button.prop('disabled', false).text('Refresh');
-					});
+						$button.prop('disabled', false).text(cp_ddp.refreshText);					});
 				},
 				className: 'button button-secondary button-small'
-			},
+			}
 			// ... other existing buttons ...
 		],
 		"pageLength": 10,
@@ -55,8 +54,11 @@ jQuery(document).ready(function ($) {
 	redirTable.on('error.dt', function (e, settings, techNote, message) {
 		e.preventDefault(); // Prevent default alert
 		console.error('RedirectsDataTables error:', message, 'TechNote:', techNote);
-		var errorDetails = 'Error details: ' + message + (techNote ? ' (Tech note: ' + techNote + ')' : '');
-		jQuery("#ddp-dashboard .errormessage").html("Redirects DataTables error occurred. " + errorDetails).show();
+
+// Use the variables in your code
+var errorDetails = cp_ddp.errorDetailsText + message + (techNote ? ' (Tech note: ' + techNote + ')' : '');
+jQuery("#ddp-dashboard .errormessage").html(cp_ddp.redirectsErrorText + errorDetails).show();
+
 	});
 
 	redirTable.buttons().container().appendTo('#ddp_redirtable_wrapper .top');
@@ -68,8 +70,8 @@ jQuery(document).ready(function ($) {
 		"autoWidth": true,
 		"processing": true,
 		language: {
-			processing: '<div id="processingMessage">Looking for duplicates</div>'
-		},
+processing: '<div id="processingMessage">' + cp_ddp.processingMessage + '</div>'		
+},
 		"serverSide": true,
 		"searching": false,
 		"ordering": false,
@@ -91,8 +93,8 @@ jQuery(document).ready(function ($) {
 				return json.data;
 			},
 			"beforeSend": function () {
-				startTime = new Date().getTime();
-				jQuery('#requestTime').html("Request: 0 sec.");
+				let startTime = new Date().getTime();
+				jQuery('#requestTime').html(cp_ddp.requestTimeText);
 				interval = setInterval(updateTime, 1000);
 				jQuery("#ddp_dupetable .dt-button").prop('disabled', true);
 				jQuery('#ddp_dupetable tbody').css('opacity', '0.5');
@@ -106,15 +108,17 @@ jQuery(document).ready(function ($) {
 			"error": function (jqXHR, textStatus, errorThrown) {
 				console.error('AJAX error:', textStatus, errorThrown);
 				var errorDetails = 'Status: ' + textStatus + ', Error: ' + errorThrown + ', Response: ' + jqXHR.responseText;
-				jQuery("#ddp-dashboard .errormessage").html("Failed to load data. " + errorDetails).show();
+
+// Use the variables in your code
+jQuery("#ddp-dashboard .errormessage").html(cp_ddp.failedToLoadDataText + errorDetails).show();
 				return []; // Return empty data to prevent further errors
 			}
 		},
 		"columns": [
 			{ "data": "ID", "visible": false },
 			{ "data": "orgID", "visible": false },
-			{ "data": "duplicate", "title": "Duplicate", "orderable": false },
-			{ "data": "original", "title": "Original", "orderable": false }
+{ "data": "duplicate", "title": cp_ddp.duplicateTitle, "orderable": false },
+{ "data": "original", "title": cp_ddp.originalTitle, "orderable": false }
 		],
 		"rowCallback": function (row) {
 			jQuery(row).addClass('wp-list-table widefat fixed striped table-view-list');
@@ -125,7 +129,7 @@ jQuery(document).ready(function ($) {
 	// Custom error handling for table
 	table.on('error.dt', function (e, settings, techNote, message) {
 		e.preventDefault(); // Prevent default alert
-		console.error('DataTables error:', message, 'TechNote:', techNote);
+		// console.error('DataTables error:', message, 'TechNote:', techNote);
 		var errorDetails = 'Error details: ' + message + (techNote ? ' (Tech note: ' + techNote + ')' : '');
 		jQuery("#ddp-dashboard .errormessage").html("DataTables error occurred. " + errorDetails).show();
 	});
@@ -163,7 +167,7 @@ jQuery(document).ready(function ($) {
 
 		// Check if there are any selected rows
 		if (selectedRows.length === 0) {
-				alert("Please select at least one row to delete.");
+			alert(cp_ddp.selectRowAlert);
 				return;
 		}
 
@@ -194,12 +198,12 @@ jQuery(document).ready(function ($) {
 					ddp_refresh_log();
 				} else {
 					var errorMessage = response.data && response.data.message ? response.data.message : "Unknown error occurred";
-					alert("Response from the server: " + errorMessage);
+					alert(cp_ddp.serverResponseText + errorMessage);
 				}
 			},
 			error: function (jqXHR, textStatus, errorThrown) {
 				// Handle other types of errors (e.g., network errors, server errors)
-				alert("An error occurred: " + textStatus);
+				alert(cp_ddp.errorOccurredText + ' ' + textStatus);
 			}
 		});
 	}
@@ -243,25 +247,25 @@ jQuery(document).ready(function ($) {
 		var buttonsDiv = jQuery('<div/>', { class: 'dt-buttons' });
 
 		buttonsDiv.append(jQuery('<button/>', {
-			text: 'Refresh',
+			text: cp_ddp.refreshText,
 			click: refreshTable,
 			class: 'dt-button button button-secondary button-small'
 		}));
 
 		buttonsDiv.append(jQuery('<button/>', {
-			text: 'Delete Selected',
+			text: cp_ddp.deleteSelectedText,
 			click: deleteSelected,
 			class: 'dt-button button button-secondary button-small ddp-delete-selected'
 		}));
 
 		buttonsDiv.append(jQuery('<button/>', {
-			text: 'Select Visible',
+			text: cp_ddp.selectVisibleText,
 			click: selectVisible,
 			class: 'dt-button button button-secondary button-small'
 		}));
 
 		buttonsDiv.append(jQuery('<button/>', {
-			text: 'Select None',
+			text: cp_ddp.selectNoneText,
 			click: selectNone,
 			class: 'dt-button button button-secondary button-small'
 		}));
@@ -281,8 +285,8 @@ jQuery(document).ready(function ($) {
 	function updateTime() {
 		var currentTime = new Date().getTime();
 		var elapsedTime = (currentTime - startTime) / 1000;
-		jQuery('#requestTime').html("Request: " + elapsedTime + " sec.");
-		jQuery('#processingMessage').html("Looking for duplicates " + elapsedTime + " sec.");
+		jQuery('#requestTime').html(cp_ddp.requestTimeText + elapsedTime + " sec.");
+		jQuery('#processingMessage').html(cp_ddp.processingMessage + elapsedTime + " sec.");
 		
 	}
 
@@ -379,8 +383,8 @@ jQuery(document).ready(function ($) {
 				}
 				if ('-1' == response.data.nextstep) {
 					// Something went wrong.
-					jQuery('#ddp_container #dashboard .statusdiv .errormessage').text('Something went wrong.').show();
-				}
+					jQuery('#ddp_container #dashboard .statusdiv .errormessage').text(cp_ddp.somethingWentWrongText).show();
+								}
 				else {
 					if (parseInt(response.data.nextstep) > 0) {
 						ddp_get_duplicates(parseInt(response.data.nextstep), data, self);
@@ -409,4 +413,6 @@ jQuery(document).ready(function ($) {
 
 	// Pretend click
 	jQuery('.ddpcomparemethod li').trigger('click');
+
+
 });
