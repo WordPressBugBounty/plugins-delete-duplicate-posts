@@ -5,7 +5,7 @@ Plugin Name: Delete Duplicate Posts
 Plugin Script: delete-duplicate-posts.php
 Plugin URI: https://cleverplugins.com
 Description: Remove duplicate blogposts on your blog! Searches and removes duplicate posts and their post meta tags. You can delete posts, pages and other Custom Post Types enabled on your website.
-Version: 5.0
+Version: 5.0.1
 Author: cleverplugins.com
 Author URI: https://cleverplugins.com
 Min WP Version: 4.7
@@ -839,7 +839,9 @@ if ( !class_exists( __NAMESPACE__ . '\\Delete_Duplicate_Posts' ) ) {
         public static function log( $text ) {
             global $wpdb;
             $ddp_logtable = $wpdb->prefix . 'ddp_log';
-            // Insert log entry
+            // Add sanitization
+            $text = sanitize_text_field( $text );
+            // Use prepared statement
             $insert_result = $wpdb->insert( $ddp_logtable, array(
                 'datime' => current_time( 'mysql' ),
                 'note'   => $text,

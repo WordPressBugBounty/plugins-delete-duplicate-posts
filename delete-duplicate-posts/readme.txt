@@ -6,7 +6,7 @@ License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Requires at least: 4.7
 Tested up to: 6.6.1
-Stable tag: 5.0
+Stable tag: 5.0.1
 Requires PHP: 7.4
 
 Get rid of duplicate posts and pages (any post type) on your blog with manual or automatic modes.
@@ -64,12 +64,9 @@ You should restore the backup you took of your website before you ran this tool.
 
 == Changelog ==
 
-= 5.0 =
-* New version number
-* Improved translations in the plugin.
-* Added new language translations: Danish (da_DK), German (de_DE), English (en_US), Spanish (es_ES), Finnish (fi_FI), French (fr_FR), Italian (it_IT), Norwegian Bokmål (nb_NO), Dutch (nl_NL), Portuguese - Brazil (pt_BR), Russian (ru_RU), Swedish (sv_SE), and Vietnamese (vi_VN).
+= 5.0.1 =
+* Updated language files.
 * Updated 3rd party libraries - Freemius.
-
 
 = 4.9.9 =
 * Advertisements permanently displayed on plugin page. Thank you @secretja for the idea.

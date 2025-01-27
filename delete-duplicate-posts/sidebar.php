@@ -61,7 +61,7 @@ echo esc_html( $my_current_user->user_email );
 				<input type="hidden" name="fields[signupsource]" value="PluginInstall">
 				<input type="hidden" name="ml-submit" value="1">
 				<input type="hidden" name="anticsrf" value="true">
-				<button type="submit" class="button button-primary">Subscribe</button>
+				<button type="submit" class="button button-primary button-small">Subscribe</button>
 
 			</form>
 			<p class="ppolicy">You can unsubscribe anytime. For more details, review our <a href="https://cleverplugins.com/privacy-policy/" target="_blank" class="privacy-policy" rel="noopener">Privacy Policy</a>.</p>
