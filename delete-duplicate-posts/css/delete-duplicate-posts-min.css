@@ -30,7 +30,7 @@
 
 .nav-tab-wrapper .pro {
 	opacity: 0.6;
-
+	pointer-events: none;
 }
 
 .ddp_content_wrapper #delete-duplicate-posts-tabs .ui-tabs-active a {
@@ -108,7 +108,9 @@ border-bottom-color: #ffffff;
 }
 
 
-
+.wrap.free .nav-tab:first-of-type {
+	margin-left: 0px;
+}
 
 #sidebar-container .sidebarrow {
 	margin-bottom: 10px;
@@ -119,29 +121,36 @@ border-bottom-color: #ffffff;
 	border-bottom: 0px;
 }
 
-.sidebarrow .newsletter {
+.ddpnewsletter,
+.innerpromotion.ddppro {
 	margin-bottom: 20px;
+	padding: 10px;
+	background-color: #f0f0f1;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	
 }
 
-.sidebarrow .newsletter button {
-	width: 100%;
+.innerpromotion h3 {
+	margin: 0 auto;
 }
 
-.newsletter p.ppolicy {
+.innerpromotion.ddppro .linklist {
+	margin:20px;
+	flex-direction: column;
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 10px;
+}
+.innerpromotion.ddppro .linklist li {
+	font-size: 1.2em;
+}
+
+
+
+.ddpnewsletter p.ppolicy {
 	font-size: .8em;
 	color: #555;
-}
-
-.sidebarrow .newsletter .form-control {
-	width: 100%;
-	margin-bottom: 10px;
-	padding: 0 8px;
-	line-height: 2;
-	min-height: 30px;
-}
-
-.sidebarrow .newsletter .form-control button {
-	width: 100%;
 }
 
 
@@ -228,7 +237,7 @@ ul.striped>:nth-child(even):hover {
 }
 
 /*
-#ddpprobutton {
+.ddpprobutton {
 	font-size: 1.5em;
 	width: 100%;
 	text-align: center;
@@ -239,13 +248,13 @@ ul.striped>:nth-child(even):hover {
 
 */
 
-#ddpprobutton {
-	width: 100%;
+.ddpprobutton {
+
 	text-align: center;
 }
 
 
-#ddpprobutton span {
+.ddpprobutton span {
 	clear: both;
 	display: block;
 }
@@ -396,12 +405,19 @@ ul.striped>:nth-child(even):hover {
 	display: none;
 }
 
+.wrap.free .nav-tab-active {
+
+	background-color: #ffffff;
+}
 
 .ddp_content_wrapper {
 	display: table;
 	table-layout: fixed;
 	width: 100%;
-	margin-top: 20px;
+	padding-left:20px;
+	background-color: #ffffff;
+	padding-top: 20px;
+	border-left: 1px solid #c3c4c7;
 }
 
 
