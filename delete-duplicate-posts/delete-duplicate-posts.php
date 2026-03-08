@@ -5,11 +5,11 @@ Plugin Name: Delete Duplicate Posts
 Plugin Script: delete-duplicate-posts.php
 Plugin URI: https://cleverplugins.com
 Description: Remove duplicate blogposts on your blog! Searches and removes duplicate posts and their post meta tags. You can delete posts, pages and other Custom Post Types enabled on your website.
-Version: 5.0.2
+Version: 5.0.3
 Author: cleverplugins.com
 Author URI: https://cleverplugins.com
 Min WP Version: 4.7
-Max WP Version: 6.8.2
+Max WP Version: 6.9.1
 Text Domain: delete-duplicate-posts
 Domain Path: /languages
 */
@@ -35,15 +35,15 @@ if ( function_exists( '\\DeleteDuplicatePosts\\ddp_fs' ) ) {
                 // Include Freemius SDK.
                 // SDK is auto-loaded through composer
                 $ddp_fs = fs_dynamic_init( array(
-                    'id'             => '925',
-                    'slug'           => 'delete-duplicate-posts',
-                    'type'           => 'plugin',
-                    'public_key'     => 'pk_0af9f9e83f00e23728a55430a57dd',
-                    'is_premium'     => false,
-                    'premium_suffix' => 'Pro',
-                    'has_addons'     => false,
-                    'has_paid_plans' => true,
-                    'menu'           => array(
+                    'id'               => '925',
+                    'slug'             => 'delete-duplicate-posts',
+                    'type'             => 'plugin',
+                    'public_key'       => 'pk_0af9f9e83f00e23728a55430a57dd',
+                    'is_premium'       => false,
+                    'premium_suffix'   => 'Pro',
+                    'has_addons'       => false,
+                    'has_paid_plans'   => true,
+                    'menu'             => array(
                         'slug'       => 'delete-duplicate-posts',
                         'first-path' => 'tools.php?page=delete-duplicate-posts&welcome-message=true',
                         'contact'    => false,
@@ -52,7 +52,8 @@ if ( function_exists( '\\DeleteDuplicatePosts\\ddp_fs' ) ) {
                             'slug' => 'tools.php',
                         ),
                     ),
-                    'is_live'        => true,
+                    'is_live'          => true,
+                    'is_org_compliant' => true,
                 ) );
             }
             return $ddp_fs;
@@ -64,7 +65,6 @@ if ( function_exists( '\\DeleteDuplicatePosts\\ddp_fs' ) ) {
         do_action( 'ddp_fs_loaded' );
     }
     ddp_fs()->add_action( 'after_uninstall', 'ddp_fs_uninstall_cleanup' );
-    require plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
 }
 /**
  * Cleans up when uninstalling
@@ -76,8 +76,8 @@ if ( function_exists( '\\DeleteDuplicatePosts\\ddp_fs' ) ) {
  */
 function ddp_fs_uninstall_cleanup() {
     global $wpdb;
-    $wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %s', $wpdb->prefix . 'ddp_log' ) );
-    $wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %s', $wpdb->prefix . 'ddp_redirects' ) );
+    $wpdb->query( 'DROP TABLE IF EXISTS ' . $wpdb->prefix . 'ddp_log' );
+    $wpdb->query( 'DROP TABLE IF EXISTS ' . $wpdb->prefix . 'ddp_redirects' );
     delete_option( 'ddp_deleted_duplicates' );
     delete_option( 'delete_duplicate_posts_options_v4' );
 }
@@ -240,7 +240,7 @@ if ( !class_exists( __NAMESPACE__ . '\\Delete_Duplicate_Posts' ) ) {
             if ( !empty( $loglines ) ) {
                 $json_response['results'] = $loglines;
             } else {
-                $json_response['msg'] = __( 'Error: Log is empty.. do something :-)', 'delete-duplicate' );
+                $json_response['msg'] = __( 'Error: Log is empty.. do something :-)', 'delete-duplicate-posts' );
                 if ( $return_data ) {
                     return $json_response;
                 }
@@ -291,7 +291,6 @@ if ( !class_exists( __NAMESPACE__ . '\\Delete_Duplicate_Posts' ) ) {
                     $response['data'][] = array(
                         'ID'        => esc_html( $dupe['ID'] ),
                         'orgID'     => esc_html( $dupe['orgID'] ),
-                        'foo'       => 'bar',
                         'duplicate' => sprintf(
                             '<a href="%s" target="_blank">%s</a> (ID #%s) <br><small>%s Type: %s Status: %s</small>',
                             esc_url( $permalink ),
@@ -324,6 +323,9 @@ if ( !class_exists( __NAMESPACE__ . '\\Delete_Duplicate_Posts' ) ) {
          * @return   void
          */
         public static function pretty_value( $size ) {
+            if ( $size <= 0 || !is_numeric( $size ) ) {
+                return '0 b';
+            }
             $unit = array(
                 'b',
                 'kb',
@@ -334,6 +336,7 @@ if ( !class_exists( __NAMESPACE__ . '\\Delete_Duplicate_Posts' ) ) {
             );
             $log = log( $size, 1024 );
             $i = floor( $log );
+            $i = max( 0, min( (int) $i, count( $unit ) - 1 ) );
             $num = $size / pow( 1024, $i );
             $calc = round( $num, 2 ) . ' ' . $unit[$i];
             return $calc;
@@ -357,15 +360,7 @@ if ( !class_exists( __NAMESPACE__ . '\\Delete_Duplicate_Posts' ) ) {
             $comparemethod = 'titlecompare';
             $return_duplicates_time = false;
             global $ddp_fs;
-            if ( isset( $currstep ) ) {
-                ++$currstep;
-            } else {
-                $currstep = 0;
-            }
             $json_response = array();
-            if ( isset( $currstep ) ) {
-                $json_response['step'] = $currstep;
-            }
             // @ check compare method - maybe change lookup routine?
             global $wpdb;
             $table_name = $wpdb->prefix . 'posts';
@@ -429,7 +424,12 @@ if ( !class_exists( __NAMESPACE__ . '\\Delete_Duplicate_Posts' ) ) {
                     if ( '' !== $wpdb->last_error ) {
                         $last_error = htmlspecialchars( $wpdb->last_error, ENT_QUOTES );
                         $json_response['lookup_error'] = htmlspecialchars( $wpdb->last_error, ENT_QUOTES );
-                        self::log( __( 'Look up error: %1$s %2$s', 'delete-duplicate-posts' ) . $last_error . ' ' . $total_dupes_query );
+                        self::log( sprintf( 
+                            /* translators: 1: Database error message, 2: SQL query */
+                            __( 'Look up error: %1$s %2$s', 'delete-duplicate-posts' ),
+                            $last_error,
+                            $total_dupes_query
+                         ) );
                     }
                     if ( $dupes ) {
                         $json_response['dupescount'] = $total_dupes;
@@ -509,13 +509,14 @@ if ( !class_exists( __NAMESPACE__ . '\\Delete_Duplicate_Posts' ) ) {
                     }
                 }
                 if ( isset( $json_response['dupes'] ) ) {
-                    self::log(
+                    self::log( sprintf(
+                        /* translators: 1: Number of duplicates, 2: Time in seconds, 3: Status data, 4: Memory usage */
                         __( 'Duplicates found: %1$d, Time: %2$s sec. %3$s Mem usage: %4$s', 'delete-duplicate-posts' ),
                         count( $json_response['dupes'] ),
                         $return_duplicates_time,
                         $statusdata,
                         self::pretty_value( memory_get_peak_usage( true ) )
-                    );
+                    ) );
                 }
             } else {
                 $json_response['msg'] = __( 'Error: Choose post types to check.', 'delete-duplicate-posts' );
@@ -867,14 +868,14 @@ if ( !class_exists( __NAMESPACE__ . '\\Delete_Duplicate_Posts' ) ) {
                 wp_enqueue_script( 'jquery' );
                 wp_enqueue_style(
                     'delete-duplicate-posts',
-                    plugins_url( '/css/delete-duplicate-posts-min.css', __FILE__ ),
+                    plugins_url( '/css/delete-duplicate-posts.css', __FILE__ ),
                     array(),
                     $pluginver
                 );
                 wp_enqueue_script(
                     'dataTables',
                     // Unique handle for your script
-                    plugin_dir_url( __FILE__ ) . 'js/DataTables/datatables.min.js',
+                    plugin_dir_url( __FILE__ ) . 'js/DataTables/datatables.js',
                     // Path to your script file
                     array('jquery'),
                     // Dependencies, if any. This script depends on jQuery
@@ -885,7 +886,7 @@ if ( !class_exists( __NAMESPACE__ . '\\Delete_Duplicate_Posts' ) ) {
                 );
                 wp_enqueue_style(
                     'dataTables',
-                    plugins_url( '/js/DataTables/datatables.min.css', __FILE__ ),
+                    plugins_url( '/js/DataTables/datatables.css', __FILE__ ),
                     array(),
                     $pluginver
                 );
@@ -1027,6 +1028,7 @@ if ( !class_exists( __NAMESPACE__ . '\\Delete_Duplicate_Posts' ) ) {
          * @return  mixed
          */
         public static function save_options( $newoptions ) {
+            self::$options = null;
             return update_option( 'delete_duplicate_posts_options_v4', $newoptions );
         }
 
@@ -1646,7 +1648,7 @@ if ( !class_exists( __NAMESPACE__ . '\\Delete_Duplicate_Posts' ) ) {
 											<td colspan="2">
 												<hr>
 												<h3><?php 
-            esc_html_e( 'Delete Duplicates Automatically', 'security-ninja' );
+            esc_html_e( 'Delete Duplicates Automatically', 'delete-duplicate-posts' );
             ?></h3>
 											</td>
 										</tr>

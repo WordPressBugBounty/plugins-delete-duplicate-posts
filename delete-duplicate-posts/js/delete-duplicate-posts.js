@@ -1,6 +1,9 @@
 /* globals jQuery:true, ajaxurl:true, cp_ddp:true  */
 jQuery(document).ready(function ($) {
 
+	var startTime;
+	var interval;
+
 	ddp_refresh_log();
 
 	var redirTable = jQuery('#ddp_redirtable').DataTable({
@@ -93,7 +96,7 @@ processing: '<div id="processingMessage">' + cp_ddp.processingMessage + '</div>'
 				return json.data;
 			},
 			"beforeSend": function () {
-				let startTime = new Date().getTime();
+				startTime = new Date().getTime();
 				jQuery('#requestTime').html(cp_ddp.requestTimeText);
 				interval = setInterval(updateTime, 1000);
 				jQuery("#ddp_dupetable .dt-button").prop('disabled', true);

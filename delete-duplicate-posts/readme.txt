@@ -5,8 +5,8 @@ Tags: delete duplicate posts, duplicates, optimization, cleanup, performance
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Requires at least: 4.7
-Tested up to: 6.8.1
-Stable tag: 5.0.2
+Tested up to: 6.9.1
+Stable tag: 5.0.3
 Requires PHP: 7.4
 
 Get rid of duplicate posts and pages (any post type) on your blog with manual or automatic modes.
@@ -63,6 +63,24 @@ You should restore the backup you took of your website before you ran this tool.
 3. Settings
 
 == Changelog ==
+
+= 5.0.3 =
+* 2026-03-08
+* Maintenance release.
+* Fixed PHP notice about translations loading too early (WP 6.7+).
+* Fixed incorrect text domains preventing some strings from being translated.
+* Fixed SQL error in plugin uninstall cleanup.
+* Fixed timer display showing NaN when scanning for duplicates.
+* Fixed options not updating correctly after saving settings.
+* Updated Freemius SDK to 2.13.0.
+* Tested up to WordPress 6.9.1.
+* Code cleanup and minor improvements.
+
+= 5.0.2 =
+* 2025-05-15
+* Maintenance release.
+* Code optimization.
+* Updating 3rd party libraries.
 
 = 5.0 =
 * New version number
@@ -462,5 +480,5 @@ You should restore the backup you took of your website before you ran this tool.
 * First release
 
 == Upgrade Notice ==
-4.9.9
+5.0.3
 Recommended update, many bugfixes and a much improved interface!

@@ -60,10 +60,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 		<p><a href="https://wpsecurityninja.com/" target="_blank" rel="noopener" class="button button-primary">Visit wpsecurityninja.com</a></p>
 		<br />
-		<a href="https://cleverplugins.com" target="_blank" style="float: right;" rel="noopener"><img src="<?php echo esc_url( plugin_dir_url( __FILE__ ) . 'images/seoboosterlogo.png' ); ?>" alt="Visit cleverplugins.com" class="logo"></a>
-		<p>SEO Booster is a powerful tool for anyone serious about SEO. <a href="https://wordpress.org/plugins/seo-booster/" target="_blank" rel="noopener">wordpress.org/plugins/seo-booster/</a><br />
-		<p><a href="https://cleverplugins.com/" target="_blank" rel="noopener" class="button button-primary">Visit cleverplugins.com</a></p>
-
 	</div><!-- .sidebarrow -->
 	<div class="sidebarrow">
 		<h3>Need help?</h3>
