@@ -5,8 +5,8 @@ Tags: delete duplicate posts, duplicates, optimization, cleanup, performance
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Requires at least: 4.7
-Tested up to: 6.9.1
-Stable tag: 5.0.3
+Tested up to: 7.0
+Stable tag: 5.1
 Requires PHP: 7.4
 
 Get rid of duplicate posts and pages (any post type) on your blog with manual or automatic modes.
@@ -14,8 +14,6 @@ Get rid of duplicate posts and pages (any post type) on your blog with manual or
 == Description ==
 
 **Delete Duplicate Posts** helps you declutter your WordPress site by removing duplicate posts along with their metadata. Whether you choose to run the cleanup process manually or set it to operate automatically on a schedule, our plugin ensures a thorough cleanup, improving your website's loading speed and overall performance.
-
-Try it out on your **Free Test Site**: [Launch Demo](https://app.instawp.io/launch?t=ddp-492-demo-template&d=v2)
 
 ### Why Choose Delete Duplicate Posts?
 
@@ -63,6 +61,34 @@ You should restore the backup you took of your website before you ran this tool.
 3. Settings
 
 == Changelog ==
+
+= 5.1 =
+* 2026-06-19
+* Fixed: fatal "Cannot redeclare ddp_fs_uninstall_cleanup()" error when installing the Pro version on top of the active free version.
+* Improved: redesigned the status notification email with a clean, responsive HTML layout, now sent as multipart with a plain-text fallback so it looks great in every email client.
+* Improved: status emails now include a clearer subject line and a run summary — what was removed (by post type), why they matched, the settings used, and whether the run was manual or scheduled.
+* NEW Pro: find duplicates by excerpt, useful when posts share a title but have different content. Posts with empty or whitespace-only excerpts (including blank lines/tabs) are never treated as duplicates.
+* Improved: the duplicates table now shows the shared excerpt (and the matched meta value) in both columns, with clearer wording; post type and status moved to a hover tooltip for a cleaner layout.
+* Security: the Tools screen now requires administrator capability before saving settings, clearing the log or recreating tables, and log entries shown in the admin are escaped so post content can no longer inject HTML or scripts.
+* Tested up to WordPress 7.0.
+* Updated Freemius SDK to 2.13.2.
+* Refactored plugin into modular classes.
+* Fixed Freemius premium-only template conditionals.
+* Code review and security hardening.
+* Fixed all untranslated strings (except marketing related)
+* Fixed: automatic duplicate deletion no longer breaks WP-Cron runs.
+* Fixed: duplicate scan count now matches the listed results.
+* NEW Pro: choose to delete duplicates permanently instead of moving them to trash.
+* Improved: Pro settings are clearly marked; free users see what Pro unlocks. Locked Pro options now show as clear upgrade prompts instead of greyed-out, broken-looking checkboxes.
+* Improved: Language files improved to ensure translation quality for internal users.
+* Fixed: the welcome and review-request notices can now be dismissed and stay hidden (the review notice reappears after 180 days).
+* Improved: moved the newsletter signup to the sidebar and switched to a lightweight self-hosted form that loads no third-party scripts (better privacy/GDPR; nothing is sent until you subscribe). Added a required consent checkbox so sign-up is an explicit opt-in.
+* Fixed: automatic deletion no longer finds zero duplicates when the "No limit" option is selected.
+* NEW: scan and delete duplicate media attachments (matched by title; files removed with the attachment).
+* Fixed: changing the automatic deletion interval now reschedules the cron job without toggling the setting off and on.
+* Improved: status email and admin notices now distinguish "deleted in this run" from "total deleted since install".
+* Fixed: duplicate list pagination now uses a stable sort order so pages do not drop or repeat rows.
+* Improved: status email notifications can be sent to multiple comma-separated recipients.
 
 = 5.0.3 =
 * 2026-03-08
@@ -478,7 +504,3 @@ You should restore the backup you took of your website before you ran this tool.
 
 = 1.0 =
 * First release
-
-== Upgrade Notice ==
-5.0.3
-Recommended update, many bugfixes and a much improved interface!

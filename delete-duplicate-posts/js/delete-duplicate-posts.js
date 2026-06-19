@@ -4,6 +4,19 @@ jQuery(document).ready(function ($) {
 	var startTime;
 	var interval;
 
+	// Persist dismissal of plugin admin notices when the user clicks the native WP close button.
+	$(document).on('click', '.ddp-dismissible-notice .notice-dismiss', function () {
+		var key = $(this).closest('.ddp-dismissible-notice').data('ddp-dismiss');
+		if (!key) {
+			return;
+		}
+		$.post(ajaxurl, {
+			action: 'ddp_dismiss_notice',
+			notice: key,
+			_ajax_nonce: cp_ddp.dismiss_notice_nonce
+		});
+	});
+
 	ddp_refresh_log();
 
 	var redirTable = jQuery('#ddp_redirtable').DataTable({
@@ -35,7 +48,7 @@ jQuery(document).ready(function ($) {
 		"dom": '<"top"Blfip>rt<"bottom"Blfip>',
 		"buttons": [
 			{
-				text: 'Refresh',
+				text: cp_ddp.refreshText,
 				action: function ( e, dt, node, config ) {
 					var $button = $(node);
 					$button.prop('disabled', true).text(cp_ddp.refreshingText);
@@ -133,8 +146,8 @@ jQuery("#ddp-dashboard .errormessage").html(cp_ddp.failedToLoadDataText + errorD
 	table.on('error.dt', function (e, settings, techNote, message) {
 		e.preventDefault(); // Prevent default alert
 		// console.error('DataTables error:', message, 'TechNote:', techNote);
-		var errorDetails = 'Error details: ' + message + (techNote ? ' (Tech note: ' + techNote + ')' : '');
-		jQuery("#ddp-dashboard .errormessage").html("DataTables error occurred. " + errorDetails).show();
+		var errorDetails = cp_ddp.errorDetailsText + message + (techNote ? ' (Tech note: ' + techNote + ')' : '');
+		jQuery("#ddp-dashboard .errormessage").html(cp_ddp.dataTablesErrorText + errorDetails).show();
 	});
 
 	// Suppress all DataTables alert dialogs globally
@@ -200,7 +213,7 @@ jQuery("#ddp-dashboard .errormessage").html(cp_ddp.failedToLoadDataText + errorD
 					table.ajax.reload(null, false);
 					ddp_refresh_log();
 				} else {
-					var errorMessage = response.data && response.data.message ? response.data.message : "Unknown error occurred";
+					var errorMessage = response.data && response.data.message ? response.data.message : cp_ddp.unknownErrorText;
 					alert(cp_ddp.serverResponseText + errorMessage);
 				}
 			},
@@ -303,14 +316,6 @@ jQuery("#ddp-dashboard .errormessage").html(cp_ddp.failedToLoadDataText + errorD
 		jQuery(this).toggleClass('selected');
 	});
 
-	// REFRESH LIST
-	jQuery(document).on('click', '#deleteduplicateposts_resetview', function (e) {
-		e.preventDefault();
-		jQuery('#ddp_container .dupelist .duplicatetable tbody').empty();
-		ddp_get_duplicates(1, senddata);
-		ddp_refresh_log();
-	});
-
 	/**
 	 * ddp_refresh_log.
 	 *
@@ -340,62 +345,6 @@ jQuery("#ddp-dashboard .errormessage").html(cp_ddp.failedToLoadDataText + errorD
 			}
 		}).fail(function (response) {
 			jQuery('#log .spinner').removeClass('is-active');
-			if (window.console && window.console.log) {
-				window.console.log(response.statusCode + ' ' + response.statusText);
-			}
-		});
-	}
-
-	/**
-	 * ddp_get_duplicates.
-	 *
-	 * @author	Lars Koudal
-	 * @since	v0.0.1
-	 * @version	v1.0.0	Sunday, January 10th, 2021.	
-	 * @version	v1.0.1	Thursday, June 9th, 2022.
-	 * @param	mixed	stepid	- integer, starts at 1
-	 * @param	mixed	data  	
-	 * @param	mixed	self  	
-	 * @return	void
-	 */
-	function ddp_get_duplicates(stepid, data, self) {
-		jQuery.ajax({ 
-			type: 'POST',
-			url: ajaxurl,
-			data: {
-				'_ajax_nonce': cp_ddp.nonce,
-				'action': 'ddp_get_duplicates',
-				'stepid': stepid
-			},
-			dataType: "json",
-			success: function (response) {
-				let dupes = response.data.dupes;
-
-				if (dupes) {
-					jQuery('#ddp_container #dashboard .statusdiv .statusmessage').html(response.data.msg).show();
-					jQuery('#ddp_container #dashboard .statusdiv .dupelist .duplicatetable').show();
-
-					jQuery.each(dupes, function (key, value) {
-						jQuery('#ddp_container #dashboard .statusdiv .dupelist .duplicatetable tbody').append('<tr><th scope="row" class="check-column"><label class="screen-reader-text" for="cb-select-' + value.ID + '">Select Post</label><input id="cb-select-' + value.ID + '" type="checkbox" name="delpost[]" value="' + value.ID + '" data-orgid="' + value.orgID + '"><div class="locked-indicator"></div></th><td><a href="' + value.permalink + '" target="_blank">' + value.title + '</a> (ID #' + value.ID + ' type:' + value.type + ' status:' + value.status + ')</td><td><a href="' + value.orgpermalink + '" target="_blank">' + value.orgtitle + '</a> (ID #' + value.orgID + ') ' + value.why + '</td></tr>');
-					});
-
-					jQuery('#ddp_container #dashboard .statusdiv .dupelist .duplicatetable tbody').slideDown();
-				}
-				else {
-					jQuery('#ddp_container #dashboard .statusdiv .statusmessage').html(response.data.msg).show();
-				}
-				if ('-1' == response.data.nextstep) {
-					// Something went wrong.
-					jQuery('#ddp_container #dashboard .statusdiv .errormessage').text(cp_ddp.somethingWentWrongText).show();
-								}
-				else {
-					if (parseInt(response.data.nextstep) > 0) {
-						ddp_get_duplicates(parseInt(response.data.nextstep), data, self);
-					}
-				}
-				//ddp_refresh_log();
-			}
-		}).fail(function (response) {
 			if (window.console && window.console.log) {
 				window.console.log(response.statusCode + ' ' + response.statusText);
 			}
