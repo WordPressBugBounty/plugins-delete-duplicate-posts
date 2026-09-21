@@ -5,8 +5,8 @@ Tags: delete duplicate posts, duplicates, optimization, cleanup, performance
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Requires at least: 4.7
-Tested up to: 7.0
-Stable tag: 5.1
+Tested up to: 7.1.1
+Stable tag: 5.2
 Requires PHP: 7.4
 
 Get rid of duplicate posts and pages (any post type) on your blog with manual or automatic modes.
@@ -23,11 +23,24 @@ Get rid of duplicate posts and pages (any post type) on your blog with manual or
 
 ## Features
 
-- **Selective Deletion**: Choose specific posts for deletion or use the select all option.
-- **Deletion Modes**: Supports both manual and automatic deletion processes.
-- **Version Preference**: Options to keep either the oldest or the newest version of a post.
-- **Deletion Notifications**: Receive status emails upon the deletion of posts.
-- **Activity Log**: An integrated log records all plugin activities for your review.
+Find duplicates on posts, pages, and custom post types—then decide what stays.
+
+**Included free**
+
+- Review matches before anything is removed, with clear keep vs remove labels.
+- Match by post title; choose whether to keep the oldest or newest post.
+- Move duplicates to the WordPress trash by default (recoverable).
+- Protect specific post IDs so they are never deleted.
+- See date and author on each post in a duplicate pair.
+- Run cleanup manually, or schedule scans that only report what would be removed—or delete on a schedule when you are ready.
+- Optional status emails and a full activity log of what the plugin did.
+
+**Pro unlocks**
+
+- Find duplicates by identical post content, excerpt, or any custom field—not only titles.
+- Include drafts, scheduled, private, and other post statuses in the scan.
+- Delete permanently when trash is not enough.
+- Preserve removed URLs with 301 redirects using built-in storage or the Redirection plugin. The Redirects tab lists only built-in redirects. When Redirection is selected, new redirects are created in its group and are not listed here.
 
 ## Experience its Efficiency
 
@@ -37,7 +50,7 @@ For a cleaner, smoother, and more efficient WordPress site, **Delete Duplicate P
 
 [Learn more about the plugin and its features.](https://cleverplugins.com/delete-duplicate-posts/)
 
-Eliminate duplicate posts, pages, and custom post types effortlessly with **Delete Duplicate Posts**, enhancing your website's performance. Our WordPress plugin offers both manual and automatic cleanup options, ensuring a streamlined and efficient management of content duplicates.
+Eliminate duplicate posts, pages, and custom post types with **Delete Duplicate Posts**. Review matches, keep the version you want, and clean up manually or on a schedule—with trash-first defaults so mistakes are recoverable.
 
 = How can I report security bugs? =
 
@@ -50,21 +63,54 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
 
 == Frequently Asked Questions ==
 = Should I take a backup before using this tool? =
-Yes! You should always take a backup before deleting posts or pages on your website.
+Yes. Always take a full site backup before deleting posts or pages, even when using trash.
 
 = What happens if it deletes something I do not want to delete? =
-You should restore the backup you took of your website before you ran this tool.
+Restore from the backup you took before running the tool. If duplicates were only moved to trash, you can also restore them from the WordPress trash.
+
+= What happens when I move built-in redirects into Redirection? =
+Each built-in redirect is created in the Redirection “Delete Duplicate Posts” group, then removed from this plugin. If that URL is already in the group, it is only removed here. A redirect that fails to move stays in the built-in list. Changing the provider setting does not move or delete existing records by itself. Redirects stored in Redirection are not listed in this plugin.
 
 == Screenshots ==
-1. Duplicate posts were found.
-2. Details in the log.
-3. Settings
+1. Duplicate review table with Remove vs Keep labels, match reason, date, and author.
+2. Confirm deletion dialog with count, trash-first outcome, and keep preference.
+3. Scheduled report-only status next to the live duplicate preview table; deletion stays a manual step.
+4. Activity log of scans, report-only cron runs, deletions, and email notices.
+5. Pro: Matching settings for title, meta, excerpt, or content comparison.
+6. Pro: URL preservation with built-in or Redirection storage, plus CSV export for built-in redirects.
+7. Pro: Redirects tab for the built-in store, with provider status, CSV export, and bulk deletion. Redirects stored in Redirection are not listed here.
 
 == Changelog ==
 
+= 5.2 =
+* 2026-09-18
+* NEW: optional report-only scheduled scans — cron can log and email what would be removed without deleting. Sites already on automatic deletion keep deleting until they switch.
+* NEW: exclude specific post IDs from automatic and manual deletion.
+* NEW Pro: find duplicates by identical post content (hash compare); empty content is ignored.
+* NEW Pro: added managed 301 redirects with built-in or Redirection storage, safe fallback, and CSV export.
+* Improved: moving built-in redirects into the Redirection group removes them from this plugin once Redirection has the URL. Failed moves stay in the built-in list.
+* Improved: the Redirects tab lists only built-in redirects. When Redirection is selected, new redirects are created in its group and are not listed here.
+* Improved: redesigned duplicate review with explicit matching/keep/removal rules, accessible row selection, selection counts, safer confirmation, clear results, and responsive pair cards.
+* Improved: cleaner Settings sub-tabs that match the rest of the admin screen, and the Save settings button now sits below the options.
+* Improved: the Redirects table can select every managed redirect at once, including rows on other pages, before deleting them.
+* Fixed: the Redirects list no longer stays on the loading indicator.
+* Improved: the Security Ninja sidebar matches the product site, and the newsletter is no longer boxed in its own card.
+* Improved: removed the debug-logging setting. Scans, deletions, and emails are still written to the activity log.
+* Improved: smaller download and install size by removing unused bundled table-library files (about 1.8 MB).
+* Improved: unified scheduled preview status with the live Duplicates table and kept report-only scans separate from manual deletion.
+* Improved: grouped Settings into focused Matching, Cleanup, Automation, and Support views; presented activity as a bounded WordPress-style table; and made plugin recommendations visible in the sidebar.
+* Improved: Redirection integration used the plugin API for create/delete operations and isolated managed redirects in a WordPress-module group.
+* Fixed: meta-field duplicate detection now respects “keep oldest/latest” for two-post groups and ignores empty meta values.
+* Fixed: manual deletion re-checks that each selected pair still matches before removing posts.
+* Fixed: empty duplicate scans now return a zero count instead of an incomplete result payload.
+* Security: settings such as keep preference and scan limits only accept known-safe values.
+* Security: internal duplicate-lookup SQL is never sent to the browser in admin responses.
+* Improved: outbound campaign links were made consistent, and the WordPress.org plugin homepage now points to the product page.
+* Tested up to WordPress 7.1.
+* Updated Freemius SDK to 2.13.4.
+
 = 5.1 =
 * 2026-06-19
-* Fixed: fatal "Cannot redeclare ddp_fs_uninstall_cleanup()" error when installing the Pro version on top of the active free version.
 * Improved: redesigned the status notification email with a clean, responsive HTML layout, now sent as multipart with a plain-text fallback so it looks great in every email client.
 * Improved: status emails now include a clearer subject line and a run summary — what was removed (by post type), why they matched, the settings used, and whether the run was manual or scheduled.
 * NEW Pro: find duplicates by excerpt, useful when posts share a title but have different content. Posts with empty or whitespace-only excerpts (including blank lines/tabs) are never treated as duplicates.
@@ -129,7 +175,7 @@ You should restore the backup you took of your website before you ran this tool.
 * Resolved DataTables error related to mismatched column data.
 * Added a "Refresh" button to the redirects table for easy data reloading.
 * Fixed potential database table creation issue affecting DataTables functionality.
-  (If issues persist, use the "Recreate Databases" button in the sidebar)
+  (If issues persist, use the "Repair plugin data tables" button in the sidebar)
 
 = 4.9.8 =
 * Finally fixing the ajax datatables error - maybe?
@@ -455,52 +501,3 @@ You should restore the backup you took of your website before you ran this tool.
 * The log was broken, it has now been fixed.
 * Removed unused and old code.
 * Improved plugin layout.
-
-= 3.1 =
-* Fix for deleting any dupes but posts - ie. not menu items :-/
-* Fix for PHP warnings.
-* Fix for old user capabilities code.
-
-= 3.0 =
-* Code refactoring and updates - Basically rewrote most of the plugin.
-* Removed link in footer.
-* Removed dashboard widget.
-* Internationalization - Now plugin can be translated
-* Danish language file added.
-
-= 2.1 =
-* Bugfixes
-
-= 2.0.6 =
-* Bugfix: Problem with the link-donation logic. Hereby fixed.
-
-= 2.0.5 =
-* Bugfix: Could not access the settings page from the Plugins page.
-* Ads are no longer optional. Sorry about that :-)
-* Changes to the amount of duplicates you can delete using CRON.
-
-= 2.0.4 =
-* Bugfix : A minor speed improvement.
-
-= 2.0.3 =
-* Bugfix : Minor logic error fixed.
-
-= 2.0.2 =
-* Bugfix : Now actually deletes duplicate posts when clicking the button manually.. Doh...
-
-= 2.0 =
-* Design interface updated
-+ New automatic CRON feature as per many user requests
-+ Optional: E-mail notifications
-
-= 1.3.1 =
-* Fixes problem with dashboard widget. Thanks to Derek for pinpointing the error.
-
-= 1.3 =
-* Ensures all post meta for the deleted blogposts are also removed...
-
-= 1.1 =
-* Uses internal delete function, which also cleans up leftover meta-data. Takes a lot more time to complete however and might time out on some hosts.
-
-= 1.0 =
-* First release

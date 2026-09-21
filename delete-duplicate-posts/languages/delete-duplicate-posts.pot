@@ -1,536 +1,1067 @@
-#, fuzzy
+# Copyright (C) 2026 cleverplugins.com
+# This file is distributed under the same license as the Delete Duplicate Posts plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Delete Duplicate Posts\n"
-"POT-Creation-Date: 2026-06-19 13:24-0400\n"
-"PO-Revision-Date: 2017-03-30 09:17-0400\n"
-"Last-Translator: Lars Koudal\n"
-"Language-Team: Lars Koudal\n"
+"Project-Id-Version: Delete Duplicate Posts 5.2\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/delete-duplicate-posts\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
-"X-Generator: Poedit 3.9\n"
-"X-Poedit-Basepath: ..\n"
-"X-Poedit-Flags-xgettext: --add-comments=translators:\n"
-"X-Poedit-WPHeader: delete-duplicate-posts.php\n"
-"X-Poedit-SourceCharset: UTF-8\n"
-"X-Poedit-KeywordsList: "
-"__;_e;_n:1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;_n_noop:1,2;_nx_noop:3c,1,2;__ngettext_noop:1,2\n"
-"X-Poedit-SearchPath-0: .\n"
-"X-Poedit-SearchPathExcluded-0: *.js\n"
+"POT-Creation-Date: 2026-09-19T16:13:14+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: delete-duplicate-posts\n"
+
+#. Plugin Name of the plugin
+#: delete-duplicate-posts.php
+#: includes/class-ddp-duplicates.php:1747
+#: includes/class-ddp-duplicates.php:1892
+#: includes/class-ddp-redirect-provider-redirection.php:151
+msgid "Delete Duplicate Posts"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: delete-duplicate-posts.php
+msgid "https://cleverplugins.com/delete-duplicate-posts/"
+msgstr ""
+
+#. Description of the plugin
+#: delete-duplicate-posts.php
+msgid "Remove duplicate blogposts on your blog! Searches and removes duplicate posts and their post meta tags. You can delete posts, pages and other Custom Post Types enabled on your website."
+msgstr ""
+
+#. Author of the plugin
+#: delete-duplicate-posts.php
+#: includes/class-ddp-duplicates.php:1753
+msgid "cleverplugins.com"
+msgstr ""
+
+#. Author URI of the plugin
+#: delete-duplicate-posts.php
+msgid "https://cleverplugins.com"
+msgstr ""
 
 #: includes/class-ddp-admin.php:23
 msgid "Pro"
 msgstr ""
 
-#: includes/class-ddp-admin.php:50 includes/class-ddp-admin.php:78
+#: includes/class-ddp-admin.php:50
+#: includes/class-ddp-admin.php:78
 msgid "Upgrade to Pro"
 msgstr ""
 
-#: includes/class-ddp-admin.php:120
-msgid "Are you sure you want to delete duplicates? There is no undo feature."
+#: includes/class-ddp-admin.php:108
+msgid "Scheduled preview"
 msgstr ""
 
-#: includes/class-ddp-admin.php:121
-msgid ""
-"You have to select which duplicates to delete. Tip: You can click the top or "
-"bottom checkbox to select all."
+#: includes/class-ddp-admin.php:109
+msgid "Scheduled automatic deletion"
 msgstr ""
 
-#: includes/class-ddp-admin.php:122 includes/class-ddp-admin.php:1181
-msgid "From URL"
+#: includes/class-ddp-admin.php:113
+msgid "Scheduled scans are preview only"
 msgstr ""
 
-#: includes/class-ddp-admin.php:123 includes/class-ddp-admin.php:1182
-msgid "Target URL"
+#: includes/class-ddp-admin.php:119
+msgid "Scheduled mode:"
 msgstr ""
 
-#: includes/class-ddp-admin.php:124
-msgid "Refreshing..."
+#: includes/class-ddp-admin.php:122
+msgid "Report only"
 msgstr ""
 
-#: includes/class-ddp-admin.php:125
-msgid "Refresh"
-msgstr ""
-
-#: includes/class-ddp-admin.php:126
-msgid "Error details: "
-msgstr ""
-
-#: includes/class-ddp-admin.php:127
-msgid "Redirects DataTables error occurred. "
+#: includes/class-ddp-admin.php:123
+#: includes/class-ddp-admin.php:1339
+msgid "Delete automatically"
 msgstr ""
 
 #: includes/class-ddp-admin.php:128
-msgid "Looking for duplicates"
-msgstr ""
-
-#: includes/class-ddp-admin.php:129
-msgid "Request: "
-msgstr ""
-
-#: includes/class-ddp-admin.php:130
-msgid "Failed to load data. "
+msgid "Email report:"
 msgstr ""
 
 #: includes/class-ddp-admin.php:131
-msgid "Duplicate"
+msgid "Enabled"
 msgstr ""
 
 #: includes/class-ddp-admin.php:132
-msgid "Original"
-msgstr ""
-
-#: includes/class-ddp-admin.php:133
-msgid "Please select at least one row to delete."
-msgstr ""
-
-#: includes/class-ddp-admin.php:134
-msgid "Response from the server: "
-msgstr ""
-
-#: includes/class-ddp-admin.php:135
-msgid "An error occurred: "
-msgstr ""
-
-#: includes/class-ddp-admin.php:136
-msgid "Delete Selected"
-msgstr ""
-
-#: includes/class-ddp-admin.php:137
-msgid "Select Visible"
+msgid "Disabled"
 msgstr ""
 
 #: includes/class-ddp-admin.php:138
+msgid "Next scheduled scan:"
+msgstr ""
+
+#: includes/class-ddp-admin.php:144
+msgid "Last preview:"
+msgstr ""
+
+#. translators: 1: Duplicate count, 2: When the report ran.
+#: includes/class-ddp-admin.php:148
+#, php-format
+msgid "%1$s duplicate(s) would be removed · ran %2$s"
+msgstr ""
+
+#: includes/class-ddp-admin.php:158
+msgid "Change scheduled scan settings"
+msgstr ""
+
+#: includes/class-ddp-admin.php:213
+msgid "Are you sure you want to delete duplicates? There is no undo feature."
+msgstr ""
+
+#: includes/class-ddp-admin.php:214
+msgid "You have to select which duplicates to delete. Tip: You can click the top or bottom checkbox to select all."
+msgstr ""
+
+#: includes/class-ddp-admin.php:215
+#: includes/class-ddp-admin.php:1582
+msgid "From URL"
+msgstr ""
+
+#: includes/class-ddp-admin.php:216
+#: includes/class-ddp-admin.php:1583
+msgid "Target URL"
+msgstr ""
+
+#: includes/class-ddp-admin.php:217
+msgid "Refreshing..."
+msgstr ""
+
+#: includes/class-ddp-admin.php:218
+msgid "Refresh"
+msgstr ""
+
+#: includes/class-ddp-admin.php:219
+msgid "Error details: "
+msgstr ""
+
+#: includes/class-ddp-admin.php:220
+msgid "Redirects DataTables error occurred. "
+msgstr ""
+
+#: includes/class-ddp-admin.php:221
+msgid "Looking for duplicates"
+msgstr ""
+
+#: includes/class-ddp-admin.php:222
+msgid "Request: "
+msgstr ""
+
+#: includes/class-ddp-admin.php:223
+msgid "Failed to load data. "
+msgstr ""
+
+#: includes/class-ddp-admin.php:224
+#: includes/class-ddp-duplicates.php:335
+msgid "Remove"
+msgstr ""
+
+#: includes/class-ddp-admin.php:225
+#: includes/class-ddp-duplicates.php:346
+msgid "Keep"
+msgstr ""
+
+#: includes/class-ddp-admin.php:226
+#, php-format
+msgid "Select duplicate: %s"
+msgstr ""
+
+#: includes/class-ddp-admin.php:227
+msgid "Please select at least one row to delete."
+msgstr ""
+
+#: includes/class-ddp-admin.php:228
+msgid "Response from the server: "
+msgstr ""
+
+#: includes/class-ddp-admin.php:229
+msgid "An error occurred: "
+msgstr ""
+
+#: includes/class-ddp-admin.php:230
+msgid "Delete Selected"
+msgstr ""
+
+#: includes/class-ddp-admin.php:231
+msgid "Select Visible"
+msgstr ""
+
+#: includes/class-ddp-admin.php:232
 msgid "Select None"
 msgstr ""
 
-#: includes/class-ddp-admin.php:139
+#: includes/class-ddp-admin.php:233
+#, php-format
+msgid "%d duplicate selected"
+msgstr ""
+
+#: includes/class-ddp-admin.php:234
+#, php-format
+msgid "%d duplicates selected"
+msgstr ""
+
+#: includes/class-ddp-admin.php:235
+#, php-format
+msgid "%d duplicate moved to Trash. You can restore it from WordPress Trash."
+msgstr ""
+
+#: includes/class-ddp-admin.php:236
+#, php-format
+msgid "%d duplicates moved to Trash. You can restore them from WordPress Trash."
+msgstr ""
+
+#: includes/class-ddp-admin.php:237
+#, php-format
+msgid "%d duplicate permanently deleted."
+msgstr ""
+
+#: includes/class-ddp-admin.php:238
+#, php-format
+msgid "%d duplicates permanently deleted."
+msgstr ""
+
+#: includes/class-ddp-admin.php:239
+msgid "You have unsaved changes."
+msgstr ""
+
+#: includes/class-ddp-admin.php:240
+msgid "The activity log could not be loaded. Refresh the page and try again."
+msgstr ""
+
+#: includes/class-ddp-admin.php:241
 msgid "DataTables error occurred. "
 msgstr ""
 
-#: includes/class-ddp-admin.php:140
+#: includes/class-ddp-admin.php:242
 msgid "Unknown error occurred"
 msgstr ""
 
-#: includes/class-ddp-admin.php:247 includes/class-ddp-admin.php:477
-#: includes/class-ddp-admin.php:628
-msgid "Settings"
+#: includes/class-ddp-admin.php:245
+#: includes/class-ddp-admin.php:1619
+msgid "Confirm deletion"
+msgstr ""
+
+#. translators: %d: Number of duplicate posts selected for deletion.
+#: includes/class-ddp-admin.php:247
+#, php-format
+msgid "You are about to delete %d duplicate post."
+msgstr ""
+
+#. translators: %d: Number of duplicate posts selected for deletion.
+#: includes/class-ddp-admin.php:249
+#, php-format
+msgid "You are about to delete %d duplicate posts."
+msgstr ""
+
+#: includes/class-ddp-admin.php:250
+msgid "Action: move to Trash (recoverable from WordPress Trash)."
+msgstr ""
+
+#: includes/class-ddp-admin.php:251
+msgid "Action: permanently delete. This cannot be undone."
+msgstr ""
+
+#: includes/class-ddp-admin.php:252
+msgid "Keeping the oldest original in each pair."
+msgstr ""
+
+#: includes/class-ddp-admin.php:253
+msgid "Keeping the latest original in each pair."
+msgstr ""
+
+#: includes/class-ddp-admin.php:254
+msgid "Examples:"
+msgstr ""
+
+#: includes/class-ddp-admin.php:255
+#, php-format
+msgid "…and %d more."
+msgstr ""
+
+#: includes/class-ddp-admin.php:256
+#: includes/class-ddp-admin.php:1628
+msgid "Confirm delete"
+msgstr ""
+
+#: includes/class-ddp-admin.php:257
+#: includes/class-ddp-admin.php:1627
+msgid "Cancel"
+msgstr ""
+
+#: includes/class-ddp-admin.php:258
+msgid "→ keep"
+msgstr ""
+
+#: includes/class-ddp-admin.php:259
+msgid "Deleting…"
+msgstr ""
+
+#: includes/class-ddp-admin.php:261
+msgid "Move built-in redirects into the Redirection “Delete Duplicate Posts” group and remove them here? Redirects that fail to move stay in the built-in list."
+msgstr ""
+
+#. translators: 1: Would move count, 2: Already in Redirection and will be removed here.
+#: includes/class-ddp-admin.php:263
+#, php-format
+msgid "Move %1$d built-in redirect(s) into the Redirection “Delete Duplicate Posts” group and remove them here. %2$d are already in that group and will only be removed here. Redirects that fail to move stay in the built-in list. Continue?"
+msgstr ""
+
+#: includes/class-ddp-admin.php:264
+msgid "Moving redirects…"
+msgstr ""
+
+#. translators: 1: Moved, 2: Already in Redirection and removed here, 3: Failed and kept.
+#: includes/class-ddp-admin.php:266
+#, php-format
+msgid "Move finished: %1$d moved, %2$d already in Redirection and removed here, %3$d failed and kept."
+msgstr ""
+
+#. translators: %d: Number of built-in redirects still waiting to be moved.
+#: includes/class-ddp-admin.php:268
+#: includes/class-ddp-admin.php:1562
+#, php-format
+msgid "Move built-in redirects into Redirection (%d)"
 msgstr ""
 
 #: includes/class-ddp-admin.php:269
-msgid "Usage and FAQ"
+#: includes/class-ddp-admin.php:1569
+msgid "Select all"
+msgstr ""
+
+#: includes/class-ddp-admin.php:270
+#: includes/class-ddp-admin.php:1570
+msgid "Select none"
 msgstr ""
 
 #: includes/class-ddp-admin.php:271
-msgid "What does this plugin do?"
+msgid "Select redirects on this page"
 msgstr ""
 
 #: includes/class-ddp-admin.php:272
-msgid ""
-"Helps you clean duplicate posts from your blog. The plugin checks for "
-"blogposts on your blog with the same title."
+#, php-format
+msgid "Select redirect: %s"
 msgstr ""
 
-#: includes/class-ddp-admin.php:273
-msgid ""
-"It can run automatically via WordPress's own internal CRON-system, or you "
-"can run it automatically."
-msgstr ""
-
+#. translators: %d: Number of redirects selected.
 #: includes/class-ddp-admin.php:274
-msgid ""
-"It also has a nice feature that can send you an e-mail when Delete Duplicate "
-"Posts finds and deletes something (if you have turned on the CRON feature)."
+#, php-format
+msgid "%d redirects selected"
 msgstr ""
 
 #: includes/class-ddp-admin.php:275
-msgid "Help! Something was deleted that was not supposed to be deleted!"
+msgid "Selecting redirects…"
 msgstr ""
 
 #: includes/class-ddp-admin.php:276
-msgid ""
-"I am sorry for that, I can only recommend you restore the database you took "
-"just before you ran this plugin."
+msgid "Could not select every redirect. Try again."
 msgstr ""
 
-#: includes/class-ddp-admin.php:277
-msgid ""
-"If you run this plugin, manually or automatically, it is at your OWN risk!"
-msgstr ""
-
+#. translators: %d: Number of redirects that could be selected in one pass.
 #: includes/class-ddp-admin.php:278
-msgid ""
-"We have done our best to avoid deleting something that should not be "
-"deleted, but if it happens, there is nothing we can do to help you."
+#, php-format
+msgid "Selected the first %d redirects. Delete those, then select all again for the rest."
 msgstr ""
 
-#: includes/class-ddp-admin.php:303
-msgid "You do not have sufficient permissions to access this page."
+#: includes/class-ddp-admin.php:279
+msgid "Delete the selected redirects? This cannot be undone."
 msgstr ""
 
-#: includes/class-ddp-admin.php:310
-msgid ""
-"Whoops! There was a problem with the data you posted. Please go back and try "
-"again."
+#: includes/class-ddp-admin.php:280
+msgid "Deleting redirects…"
 msgstr ""
 
-#: includes/class-ddp-admin.php:409
-msgid "Settings saved."
+#. translators: %d: Number deleted.
+#: includes/class-ddp-admin.php:282
+#, php-format
+msgid "Deleted %d redirect(s)."
 msgstr ""
 
-#: includes/class-ddp-admin.php:416 includes/class-ddp-admin.php:427
-msgid "Whoops! Some error occured, try again, please!"
+#: includes/class-ddp-admin.php:283
+msgid "Select at least one redirect to delete."
+msgstr ""
+
+#: includes/class-ddp-admin.php:284
+msgid "The redirect action failed. Check the log and try again."
+msgstr ""
+
+#: includes/class-ddp-admin.php:391
+#: includes/class-ddp-admin.php:625
+#: includes/class-ddp-admin.php:841
+msgid "Settings"
+msgstr ""
+
+#: includes/class-ddp-admin.php:413
+msgid "Usage and FAQ"
+msgstr ""
+
+#: includes/class-ddp-admin.php:415
+msgid "What does this plugin do?"
+msgstr ""
+
+#: includes/class-ddp-admin.php:416
+msgid "Helps you clean duplicate posts from your blog. The plugin checks for blogposts on your blog with the same title."
+msgstr ""
+
+#: includes/class-ddp-admin.php:417
+msgid "It can run automatically via WordPress's own internal CRON-system, or you can run it automatically."
+msgstr ""
+
+#: includes/class-ddp-admin.php:418
+msgid "It also has a nice feature that can send you an e-mail when Delete Duplicate Posts finds and deletes something (if you have turned on the CRON feature)."
+msgstr ""
+
+#: includes/class-ddp-admin.php:419
+msgid "Help! Something was deleted that was not supposed to be deleted!"
 msgstr ""
 
 #: includes/class-ddp-admin.php:420
+msgid "I am sorry for that, I can only recommend you restore the database you took just before you ran this plugin."
+msgstr ""
+
+#: includes/class-ddp-admin.php:421
+msgid "If you run this plugin, manually or automatically, it is at your OWN risk!"
+msgstr ""
+
+#: includes/class-ddp-admin.php:422
+msgid "We have done our best to avoid deleting something that should not be deleted, but if it happens, there is nothing we can do to help you."
+msgstr ""
+
+#: includes/class-ddp-admin.php:447
+msgid "You do not have sufficient permissions to access this page."
+msgstr ""
+
+#: includes/class-ddp-admin.php:454
+msgid "Whoops! There was a problem with the data you posted. Please go back and try again."
+msgstr ""
+
+#: includes/class-ddp-admin.php:552
+msgid "Settings saved."
+msgstr ""
+
+#: includes/class-ddp-admin.php:559
+#: includes/class-ddp-admin.php:570
+msgid "Whoops! Some error occured, try again, please!"
+msgstr ""
+
+#: includes/class-ddp-admin.php:563
 msgid "The log was cleared."
 msgstr ""
 
-#: includes/class-ddp-admin.php:467
-msgid ""
-"Thanks for installing. Scan your site for duplicate posts below to get "
-"started."
+#: includes/class-ddp-admin.php:573
+#: includes/class-ddp-duplicates.php:45
+#: includes/class-ddp-duplicates.php:279
+#: includes/class-ddp-logger.php:32
+#: includes/class-ddp-redirects.php:318
+#: includes/class-ddp-redirects.php:699
+#: includes/class-ddp-redirects.php:712
+#: includes/class-ddp-redirects.php:724
+msgid "You do not have sufficient permissions to perform this action."
 msgstr ""
 
-#: includes/class-ddp-admin.php:475
+#: includes/class-ddp-admin.php:577
+msgid "Plugin data tables were repaired. Missing log and redirect tables were recreated. No posts were deleted."
+msgstr ""
+
+#: includes/class-ddp-admin.php:606
+msgid "Review duplicate pairs, choose what stays, and clean up with confidence."
+msgstr ""
+
+#: includes/class-ddp-admin.php:615
+msgid "Thanks for installing. Scan your site for duplicate posts below to get started."
+msgstr ""
+
+#: includes/class-ddp-admin.php:622
+msgid "Delete Duplicate Posts sections"
+msgstr ""
+
+#: includes/class-ddp-admin.php:623
 msgid "Duplicates"
 msgstr ""
 
-#: includes/class-ddp-admin.php:476
+#: includes/class-ddp-admin.php:624
 msgid "Log"
 msgstr ""
 
-#: includes/class-ddp-admin.php:478 includes/class-ddp-admin.php:1175
-#: includes/class-ddp-admin.php:1191
+#: includes/class-ddp-admin.php:626
+#: includes/class-ddp-admin.php:1499
 msgid "Redirects"
 msgstr ""
 
+#: includes/class-ddp-admin.php:663
+msgid "Matching titles"
+msgstr ""
+
+#: includes/class-ddp-admin.php:664
+msgid "Matching meta values"
+msgstr ""
+
+#: includes/class-ddp-admin.php:665
+msgid "Matching excerpts"
+msgstr ""
+
+#: includes/class-ddp-admin.php:666
+msgid "Matching content"
+msgstr ""
+
+#: includes/class-ddp-admin.php:672
+msgid "Keep newest"
+msgstr ""
+
+#: includes/class-ddp-admin.php:673
+#: includes/class-ddp-admin.php:1167
+msgid "Keep oldest"
+msgstr ""
+
+#: includes/class-ddp-admin.php:676
+#: includes/class-ddp-admin.php:1205
+#: includes/class-ddp-admin.php:1216
+msgid "Delete permanently"
+msgstr ""
+
+#: includes/class-ddp-admin.php:677
+msgid "Move to Trash"
+msgstr ""
+
+#: includes/class-ddp-admin.php:686
+msgid "Duplicate preview"
+msgstr ""
+
+#: includes/class-ddp-admin.php:687
+msgid "Current duplicates"
+msgstr ""
+
+#: includes/class-ddp-admin.php:693
+msgid "This live table is your preview. Scheduled scans do not delete anything; deletion only happens if you select rows here and confirm the manual action."
+msgstr ""
+
+#: includes/class-ddp-admin.php:694
+msgid "This is a live review list. Nothing is removed until you select duplicates and confirm the manual deletion."
+msgstr ""
+
+#: includes/class-ddp-admin.php:697
+msgid "Current duplicate review rules"
+msgstr ""
+
+#: includes/class-ddp-admin.php:698
+msgid "Match:"
+msgstr ""
+
+#: includes/class-ddp-admin.php:699
+msgid "Keep:"
+msgstr ""
+
+#: includes/class-ddp-admin.php:700
+msgid "Manual removal:"
+msgstr ""
+
+#: includes/class-ddp-admin.php:703
+msgid "Before deleting:"
+msgstr ""
+
+#: includes/class-ddp-admin.php:706
+msgid "Create a current backup. Manual removals cannot be undone with this setting."
+msgstr ""
+
+#: includes/class-ddp-admin.php:707
+msgid "Create a current backup. Manual removals go to WordPress Trash and can be restored."
+msgstr ""
+
 #. translators: %s: Total number of deleted duplicates since install.
-#: includes/class-ddp-admin.php:530
+#: includes/class-ddp-admin.php:730
 #, php-format
 msgid "%s duplicates deleted in total since install!"
 msgstr ""
 
 #. translators: %s: Total number of deleted duplicates since install.
-#: includes/class-ddp-admin.php:536
+#: includes/class-ddp-admin.php:736
 #, php-format
-msgid ""
-"Hey, I noticed this plugin has deleted %s duplicate posts in total since "
-"install - that's awesome! Could you please do me a BIG favor and give it a 5-"
-"star rating on WordPress? Just to help us spread the word and boost our "
-"motivation."
+msgid "Hey, I noticed this plugin has deleted %s duplicate posts in total since install - that's awesome! Could you please do me a BIG favor and give it a 5-star rating on WordPress? Just to help us spread the word and boost our motivation."
 msgstr ""
 
-#: includes/class-ddp-admin.php:540
+#: includes/class-ddp-admin.php:740
 msgid "Ok, you deserve it"
 msgstr ""
 
-#: includes/class-ddp-admin.php:562
+#: includes/class-ddp-admin.php:762
 msgid "Delete Duplicate Posts Pro"
 msgstr ""
 
-#: includes/class-ddp-admin.php:563
-msgid ""
-"Pro adds deeper cleanup controls for sites that need more than a basic title "
-"scan."
+#: includes/class-ddp-admin.php:763
+msgid "When matching titles is not enough, Pro helps you find the right duplicates and protect SEO when you remove them."
 msgstr ""
 
-#: includes/class-ddp-admin.php:565
-msgid "Delete permanently:"
+#: includes/class-ddp-admin.php:765
+msgid "Match by content, excerpt, or custom fields:"
 msgstr ""
 
-#: includes/class-ddp-admin.php:565 includes/class-ddp-admin.php:974
-msgid "Remove duplicates from the database instead of moving them to trash."
+#: includes/class-ddp-admin.php:765
+msgid "Find duplicates with identical body content, the same excerpt, or any post meta value—not only matching titles."
 msgstr ""
 
-#: includes/class-ddp-admin.php:566
-msgid "301 redirects:"
+#: includes/class-ddp-admin.php:766
+msgid "Scan more than published posts:"
 msgstr ""
 
-#: includes/class-ddp-admin.php:566
-msgid "Send visitors from deleted URLs to the original post."
+#: includes/class-ddp-admin.php:766
+msgid "Include drafts, scheduled, private, and other statuses in the same cleanup."
 msgstr ""
 
-#: includes/class-ddp-admin.php:567
-msgid "Compare by meta:"
+#: includes/class-ddp-admin.php:767
+msgid "Delete permanently when needed:"
 msgstr ""
 
-#: includes/class-ddp-admin.php:567 includes/class-ddp-admin.php:894
-msgid "Find duplicates by SKU, custom fields, or any post meta value."
+#: includes/class-ddp-admin.php:767
+msgid "Skip the trash and remove duplicates from the database when you are sure."
 msgstr ""
 
-#: includes/class-ddp-admin.php:568
-msgid "Any post status:"
+#: includes/class-ddp-admin.php:768
+msgid "301 redirects you can manage:"
 msgstr ""
 
-#: includes/class-ddp-admin.php:568
-msgid "Include drafts, scheduled, private, and other statuses in the scan."
-msgstr ""
-
-#: includes/class-ddp-admin.php:569
-msgid "Redirect management:"
-msgstr ""
-
-#: includes/class-ddp-admin.php:569
-msgid "View and manage redirects created when duplicates are removed."
+#: includes/class-ddp-admin.php:768
+msgid "Send visitors from removed URLs to the post you kept, and review those redirects later."
 msgstr ""
 
 #. translators: %s: Yearly price, e.g. $29.99/year.
-#: includes/class-ddp-admin.php:575
+#: includes/class-ddp-admin.php:774
 #, php-format
 msgid "%s/year"
 msgstr ""
 
 #. translators: 1: Lifetime price, 2: Link to lifetime checkout.
-#: includes/class-ddp-admin.php:582
+#: includes/class-ddp-admin.php:781
 #, php-format
 msgid "Prefer a one-time purchase? %1$s — %2$s"
 msgstr ""
 
-#: includes/class-ddp-admin.php:584
+#: includes/class-ddp-admin.php:783
 msgid "Get lifetime access"
 msgstr ""
 
-#: includes/class-ddp-admin.php:589
+#: includes/class-ddp-admin.php:788
 msgid "30-day money-back guarantee"
 msgstr ""
 
-#: includes/class-ddp-admin.php:590
-msgid ""
-"If the plugin does not work as expected and we cannot resolve the issue, we "
-"will consider a full refund within 30 days of purchase."
+#: includes/class-ddp-admin.php:789
+msgid "If the plugin does not work as expected and we cannot resolve the issue, we will consider a full refund within 30 days of purchase."
 msgstr ""
 
-#: includes/class-ddp-admin.php:614
-msgid "The Log"
+#: includes/class-ddp-admin.php:815
+msgid "Activity log"
 msgstr ""
 
-#: includes/class-ddp-admin.php:621
-msgid "Reset log"
+#: includes/class-ddp-admin.php:816
+msgid "Recent scans, deletions, redirects, and email activity."
 msgstr ""
 
-#: includes/class-ddp-admin.php:635
-msgid "Automatically Deleting Duplicates"
+#: includes/class-ddp-admin.php:820
+msgid "Clear activity log"
 msgstr ""
 
-#: includes/class-ddp-admin.php:637
-msgid ""
-"You have enabled automatic deletion, so I am running on automatic. I will "
-"take care of everything..."
+#: includes/class-ddp-admin.php:820
+msgid "Clear all activity log entries? This cannot be undone."
 msgstr ""
 
-#. translators: Showing when the next check happens and what the current time is
-#: includes/class-ddp-admin.php:641
-#, php-format
-msgid "Next automated check %1$s. Current time %2$s"
+#: includes/class-ddp-admin.php:828
+msgid "Date and time"
 msgstr ""
 
-#: includes/class-ddp-admin.php:656
-msgid "Which post types?:"
+#: includes/class-ddp-admin.php:829
+msgid "Activity"
 msgstr ""
 
-#: includes/class-ddp-admin.php:695
+#: includes/class-ddp-admin.php:834
+msgid "No activity has been recorded yet."
+msgstr ""
+
+#: includes/class-ddp-admin.php:842
+msgid "Configure what counts as a duplicate, what happens during cleanup, and whether scans run automatically."
+msgstr ""
+
+#: includes/class-ddp-admin.php:843
+msgid "Settings groups"
+msgstr ""
+
+#: includes/class-ddp-admin.php:844
+msgid "Matching"
+msgstr ""
+
+#: includes/class-ddp-admin.php:845
+msgid "Cleanup"
+msgstr ""
+
+#: includes/class-ddp-admin.php:846
+msgid "Automation"
+msgstr ""
+
+#: includes/class-ddp-admin.php:847
+msgid "Support & maintenance"
+msgstr ""
+
+#: includes/class-ddp-admin.php:855
+msgid "What to scan"
+msgstr ""
+
+#: includes/class-ddp-admin.php:859
+msgid "Post types"
+msgstr ""
+
+#: includes/class-ddp-admin.php:898
 msgid "(Media files are matched by title and removed with their files.)"
 msgstr ""
 
 #. translators: Total number of deleted duplicates
-#: includes/class-ddp-admin.php:705
+#: includes/class-ddp-admin.php:908
 #, php-format
 msgid "(%s total found)"
 msgstr ""
 
-#: includes/class-ddp-admin.php:717
+#: includes/class-ddp-admin.php:920
 msgid "Choose which post types to scan for duplicates."
 msgstr ""
 
-#: includes/class-ddp-admin.php:723
+#: includes/class-ddp-admin.php:926
+msgid "Protected post IDs"
+msgstr ""
+
+#: includes/class-ddp-admin.php:933
+msgid "Comma-separated post IDs to protect. They will never be listed for removal (manual or scheduled), but can still be kept as the original in a duplicate pair."
+msgstr ""
+
+#: includes/class-ddp-admin.php:939
 msgid "Post status"
 msgstr ""
 
-#: includes/class-ddp-admin.php:768
-msgid ""
-"Warning: Enabling this can give false results. Only enable if you know what "
-"you are doing."
+#: includes/class-ddp-admin.php:984
+msgid "Warning: Enabling this can give false results. Only enable if you know what you are doing."
 msgstr ""
 
-#: includes/class-ddp-admin.php:789
+#: includes/class-ddp-admin.php:1005
 msgid "Scan more post statuses"
 msgstr ""
 
 #. translators: %s: natural-language list of post statuses, e.g. "scheduled, draft, and private".
-#: includes/class-ddp-admin.php:792
+#: includes/class-ddp-admin.php:1008
 #, php-format
 msgid "Also scan %s posts."
 msgstr ""
 
-#: includes/class-ddp-admin.php:824
-msgid "Comparison Method"
-msgstr ""
-
-#: includes/class-ddp-admin.php:831
-msgid "Compare by title (default)"
-msgstr ""
-
-#: includes/class-ddp-admin.php:832
-msgid "Looks at the title of the post itself."
-msgstr ""
-
-#: includes/class-ddp-admin.php:841 includes/class-ddp-admin.php:893
-msgid "Compare by meta tag"
-msgstr ""
-
-#: includes/class-ddp-admin.php:843
-msgid "Compare by any meta tag."
-msgstr ""
-
-#: includes/class-ddp-admin.php:881 includes/class-ddp-admin.php:903
-msgid "Compare by excerpt"
-msgstr ""
-
-#: includes/class-ddp-admin.php:883
-msgid ""
-"Looks at the excerpt of the post. Posts with empty excerpts are never "
-"treated as duplicates."
-msgstr ""
-
-#: includes/class-ddp-admin.php:904
-msgid ""
-"Catch posts that share a title but differ in content by matching on the "
-"excerpt instead. Empty excerpts are ignored."
-msgstr ""
-
-#: includes/class-ddp-admin.php:914
-msgid "Delete which posts?:"
-msgstr ""
-
-#: includes/class-ddp-admin.php:924
-msgid "Keep oldest"
-msgstr ""
-
-#: includes/class-ddp-admin.php:931
-msgid "Keep latest"
-msgstr ""
-
-#: includes/class-ddp-admin.php:934
-msgid ""
-"Keep the oldest or the latest version of duplicates? Default is keeping the "
-"oldest, and deleting any subsequent duplicate posts"
-msgstr ""
-
-#: includes/class-ddp-admin.php:946
-msgid "Deletion method:"
-msgstr ""
-
-#: includes/class-ddp-admin.php:953
-msgid "Move to trash (default)"
-msgstr ""
-
-#: includes/class-ddp-admin.php:954
-msgid "Keeps posts recoverable from the WordPress trash."
-msgstr ""
-
-#: includes/class-ddp-admin.php:962 includes/class-ddp-admin.php:973
-msgid "Delete permanently"
-msgstr ""
-
-#: includes/class-ddp-admin.php:963
-msgid "Removes posts from the database. This cannot be undone."
-msgstr ""
-
-#: includes/class-ddp-admin.php:985
-msgid "Enable 301 redirects?:"
-msgstr ""
-
-#: includes/class-ddp-admin.php:996 includes/class-ddp-admin.php:1004
-msgid "Automatically 301 redirect deleted posts to the original."
-msgstr ""
-
-#: includes/class-ddp-admin.php:1016
-msgid "Delete Duplicates Automatically"
-msgstr ""
-
-#: includes/class-ddp-admin.php:1021
-msgid "Enable automatic deletion?:"
-msgstr ""
-
-#: includes/class-ddp-admin.php:1032
-msgid "Clean duplicates automatically."
-msgstr ""
-
-#: includes/class-ddp-admin.php:1038
-msgid "How many:"
+#: includes/class-ddp-admin.php:1041
+msgid "How to identify duplicates"
 msgstr ""
 
 #: includes/class-ddp-admin.php:1045
-msgid "No limit"
+msgid "Comparison method"
 msgstr ""
 
-#: includes/class-ddp-admin.php:1069
-msgid ""
-"If you have many duplicates, the plugin might time out before finding them "
-"all. Try limiting the amount of duplicates here. Default: Unlimited."
+#: includes/class-ddp-admin.php:1052
+msgid "Compare by title (default)"
 msgstr ""
 
-#: includes/class-ddp-admin.php:1070
-msgid "This only applies to automatic (CRON) jobs."
+#: includes/class-ddp-admin.php:1053
+msgid "Looks at the title of the post itself."
 msgstr ""
 
-#: includes/class-ddp-admin.php:1076
-msgid "How often?:"
+#: includes/class-ddp-admin.php:1062
+#: includes/class-ddp-admin.php:1119
+msgid "Compare by meta tag"
 msgstr ""
 
-#: includes/class-ddp-admin.php:1099
-msgid "How often should the cron job run?"
+#: includes/class-ddp-admin.php:1063
+msgid "Compare by any meta tag."
+msgstr ""
+
+#: includes/class-ddp-admin.php:1101
+#: includes/class-ddp-admin.php:1129
+msgid "Compare by excerpt"
+msgstr ""
+
+#: includes/class-ddp-admin.php:1102
+msgid "Looks at the excerpt of the post. Posts with empty excerpts are never treated as duplicates."
+msgstr ""
+
+#: includes/class-ddp-admin.php:1108
+#: includes/class-ddp-admin.php:1139
+msgid "Compare by content"
 msgstr ""
 
 #: includes/class-ddp-admin.php:1109
-msgid "Send status mail?:"
+msgid "Matches posts with identical body content (hash compare). Posts with empty content are never treated as duplicates."
 msgstr ""
 
-#: includes/class-ddp-admin.php:1122
+#: includes/class-ddp-admin.php:1120
+msgid "Find duplicates by SKU, custom fields, or any post meta value."
+msgstr ""
+
+#: includes/class-ddp-admin.php:1130
+msgid "Catch posts that share a title but differ in content by matching on the excerpt instead. Empty excerpts are ignored."
+msgstr ""
+
+#: includes/class-ddp-admin.php:1140
+msgid "Find exact body clones even when titles differ. Empty content is ignored."
+msgstr ""
+
+#: includes/class-ddp-admin.php:1153
+msgid "What to keep / remove"
+msgstr ""
+
+#: includes/class-ddp-admin.php:1157
+msgid "Post to keep"
+msgstr ""
+
+#: includes/class-ddp-admin.php:1174
+msgid "Keep latest"
+msgstr ""
+
+#: includes/class-ddp-admin.php:1177
+msgid "Keep the oldest or the latest version of duplicates? Default is keeping the oldest, and deleting any subsequent duplicate posts"
+msgstr ""
+
+#: includes/class-ddp-admin.php:1189
+msgid "Deletion method"
+msgstr ""
+
+#: includes/class-ddp-admin.php:1196
+msgid "Move to trash (default)"
+msgstr ""
+
+#: includes/class-ddp-admin.php:1197
+msgid "Keeps posts recoverable from the WordPress trash."
+msgstr ""
+
+#: includes/class-ddp-admin.php:1206
+msgid "Removes posts from the database. This cannot be undone."
+msgstr ""
+
+#: includes/class-ddp-admin.php:1217
+msgid "Remove duplicates from the database instead of moving them to trash."
+msgstr ""
+
+#: includes/class-ddp-admin.php:1229
+msgid "URL preservation"
+msgstr ""
+
+#: includes/class-ddp-admin.php:1233
+msgid "Preserve removed URLs with 301 redirects"
+msgstr ""
+
+#: includes/class-ddp-admin.php:1244
+msgid "When a duplicate is removed, create a 301 redirect from its URL to the post you kept."
+msgstr ""
+
+#: includes/class-ddp-admin.php:1247
+msgid "Store redirects in:"
+msgstr ""
+
+#: includes/class-ddp-admin.php:1252
+#: includes/class-ddp-admin.php:1507
+msgid "Delete Duplicate Posts (built in)"
+msgstr ""
+
+#: includes/class-ddp-admin.php:1253
+msgid "Managed in this plugin’s Redirects tab."
+msgstr ""
+
+#: includes/class-ddp-admin.php:1260
+#: includes/class-ddp-admin.php:1506
+msgid "Redirection plugin"
+msgstr ""
+
+#: includes/class-ddp-admin.php:1261
+msgid "Stored in the Redirection “Delete Duplicate Posts” group and not listed here. Switching this setting does not move or delete existing records. Move on the Redirects tab only sends leftover built-in redirects into that group."
+msgstr ""
+
+#: includes/class-ddp-admin.php:1266
+msgid "Install and activate the Redirection plugin to store redirects there instead. Until then, new redirects use the built-in store."
+msgstr ""
+
+#: includes/class-ddp-admin.php:1268
+msgid "Your preference is Redirection, but it is not available right now. New redirects fall back to the built-in store until Redirection is active again."
+msgstr ""
+
+#: includes/class-ddp-admin.php:1276
+msgid "Export managed redirects to CSV"
+msgstr ""
+
+#: includes/class-ddp-admin.php:1287
+msgid "Preserve traffic from removed URLs with 301 redirects"
+msgstr ""
+
+#: includes/class-ddp-admin.php:1288
+msgid "Choose built-in storage, listed in this plugin, or the Redirection plugin. Redirects sent to Redirection are not listed here."
+msgstr ""
+
+#: includes/class-ddp-admin.php:1301
+msgid "Scheduled scans & notifications"
+msgstr ""
+
+#: includes/class-ddp-admin.php:1306
+msgid "Scheduled scans"
+msgstr ""
+
+#: includes/class-ddp-admin.php:1317
+msgid "Run a scheduled scan on the interval below. Choose report-only or automatic deletion in the next setting."
+msgstr ""
+
+#: includes/class-ddp-admin.php:1323
+msgid "Scheduled scan mode"
+msgstr ""
+
+#: includes/class-ddp-admin.php:1332
+msgid "Report only (recommended)"
+msgstr ""
+
+#: includes/class-ddp-admin.php:1333
+msgid "Scan on schedule, log and email what would be removed. Nothing is deleted."
+msgstr ""
+
+#: includes/class-ddp-admin.php:1340
+msgid "Remove duplicates on schedule using your keep and deletion settings above."
+msgstr ""
+
+#: includes/class-ddp-admin.php:1348
+msgid "Maximum per scan"
+msgstr ""
+
+#: includes/class-ddp-admin.php:1355
+msgid "No limit"
+msgstr ""
+
+#: includes/class-ddp-admin.php:1379
+msgid "If you have many duplicates, the plugin might time out before finding them all. Try limiting the amount of duplicates here. Default: Unlimited."
+msgstr ""
+
+#: includes/class-ddp-admin.php:1380
+msgid "This only applies to automatic (CRON) jobs."
+msgstr ""
+
+#: includes/class-ddp-admin.php:1386
+msgid "Scan frequency"
+msgstr ""
+
+#: includes/class-ddp-admin.php:1409
+msgid "How often should the scheduled scan run?"
+msgstr ""
+
+#: includes/class-ddp-admin.php:1419
+msgid "Email reports"
+msgstr ""
+
+#: includes/class-ddp-admin.php:1432
 msgid "Sends a status email if duplicates have been found."
 msgstr ""
 
-#: includes/class-ddp-admin.php:1129
-msgid "Email recipient:"
+#: includes/class-ddp-admin.php:1439
+msgid "Email recipients"
 msgstr ""
 
-#: includes/class-ddp-admin.php:1135
-msgid ""
-"Who should get the notification email. Separate multiple addresses with "
-"commas."
+#: includes/class-ddp-admin.php:1445
+msgid "Who should get the notification email. Separate multiple addresses with commas."
 msgstr ""
 
-#: includes/class-ddp-admin.php:1149
-msgid "Enable debug logging?:"
+#: includes/class-ddp-admin.php:1456
+msgid "Save settings"
 msgstr ""
 
-#: includes/class-ddp-admin.php:1160
-msgid "Should only be enabled if debugging a problem."
+#: includes/class-ddp-admin.php:1460
+msgid "Support and maintenance"
 msgstr ""
 
-#: includes/class-ddp-admin.php:1165
-msgid "Save Settings"
+#: includes/class-ddp-admin.php:1461
+msgid "Email support is available to Pro customers."
 msgstr ""
 
-#: includes/class-ddp-admin.php:1176
-msgid "This table shows all redirects created by the plugin."
+#: includes/class-ddp-admin.php:1463
+msgid "Free users:"
 msgstr ""
 
-#: includes/class-ddp-admin.php:1180
+#: includes/class-ddp-admin.php:1464
+msgid "Visit the WordPress.org support forum"
+msgstr ""
+
+#: includes/class-ddp-admin.php:1467
+#: includes/class-ddp-admin.php:1476
+msgid "Repair plugin data tables"
+msgstr ""
+
+#: includes/class-ddp-admin.php:1468
+msgid "Recreate missing log and redirect tables used by this plugin. This does not delete posts or change duplicate settings."
+msgstr ""
+
+#: includes/class-ddp-admin.php:1477
+msgid "Repair plugin data tables? This recreates missing Delete Duplicate Posts log and redirect tables. It does not delete any posts."
+msgstr ""
+
+#: includes/class-ddp-admin.php:1503
+msgid "Selected provider:"
+msgstr ""
+
+#: includes/class-ddp-admin.php:1511
+msgid "New redirects go to:"
+msgstr ""
+
+#: includes/class-ddp-admin.php:1514
+msgid "Redirection “Delete Duplicate Posts” group"
+msgstr ""
+
+#: includes/class-ddp-admin.php:1515
+msgid "Built-in redirect table"
+msgstr ""
+
+#: includes/class-ddp-admin.php:1520
+msgid "Managed records:"
+msgstr ""
+
+#: includes/class-ddp-admin.php:1525
+msgid "Fallback active:"
+msgstr ""
+
+#: includes/class-ddp-admin.php:1525
+msgid "Redirection is unavailable, so new redirects use the built-in store. Your preference is preserved."
+msgstr ""
+
+#. translators: %s: link to the Redirection plugin screen.
+#: includes/class-ddp-admin.php:1534
+#, php-format
+msgid "These redirects are stored in the Redirection plugin, in the “Delete Duplicate Posts” group, and are not listed here. %s"
+msgstr ""
+
+#: includes/class-ddp-admin.php:1535
+msgid "Open Redirection"
+msgstr ""
+
+#. translators: %s: number of built-in redirects not yet moved.
+#: includes/class-ddp-admin.php:1547
+#, php-format
+msgid "%s built-in redirect has not been moved into Redirection yet."
+msgid_plural "%s built-in redirects have not been moved into Redirection yet."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-ddp-admin.php:1555
+msgid "Export CSV"
+msgstr ""
+
+#: includes/class-ddp-admin.php:1572
+msgid "Delete selected"
+msgstr ""
+
+#: includes/class-ddp-admin.php:1581
 msgid "ID"
 msgstr ""
 
-#: includes/class-ddp-admin.php:1192
-msgid ""
-"Redirects are a premium feature. Please upgrade to access this functionality."
+#: includes/class-ddp-admin.php:1596
+msgid "URL protection for removed duplicates"
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:45 includes/class-ddp-duplicates.php:107
-#: includes/class-ddp-logger.php:32 includes/class-ddp-redirects.php:73
-msgid "You do not have sufficient permissions to perform this action."
+#: includes/class-ddp-admin.php:1597
+msgid "Preserve traffic from removed URLs with 301 redirects. Built-in redirects are listed here. Redirects sent to the Redirection plugin are not."
+msgstr ""
+
+#: includes/class-ddp-admin.php:1600
+msgid "Explore Pro URL protection"
 msgstr ""
 
 #: includes/class-ddp-duplicates.php:53
@@ -541,294 +1072,330 @@ msgstr ""
 msgid "No duplicates were selected?"
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:75
-msgid "Invalid duplicates selected."
+#: includes/class-ddp-duplicates.php:78
+msgid "No valid duplicate pairs remain to delete. Refresh the list and try again."
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:136
+#: includes/class-ddp-duplicates.php:318
 msgid "Matched value"
 msgstr ""
 
 #. translators: 1: Post type, 2: Post status.
-#: includes/class-ddp-duplicates.php:146
+#: includes/class-ddp-duplicates.php:328
 #, php-format
 msgid "Type: %1$s · Status: %2$s"
 msgstr ""
 
 #. translators: 1: Database error message, 2: SQL query
-#: includes/class-ddp-duplicates.php:400 includes/class-ddp-duplicates.php:882
+#: includes/class-ddp-duplicates.php:678
+#: includes/class-ddp-duplicates.php:1129
+#: includes/class-ddp-duplicates.php:1243
 #, php-format
 msgid "Look up error: %1$s %2$s"
 msgstr ""
 
 #. translators: %s: Original (kept) post ID.
-#: includes/class-ddp-duplicates.php:430
+#: includes/class-ddp-duplicates.php:708
 #, php-format
 msgid "Same title as post #%s"
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:445
+#: includes/class-ddp-duplicates.php:723
 msgid "Error, choose which meta_key to look for duplicate values in."
 msgstr ""
 
 #. translators: 1: Meta key name, 2: Original (kept) post ID.
-#: includes/class-ddp-duplicates.php:622
+#: includes/class-ddp-duplicates.php:871
 #, php-format
 msgid "Same %1$s value as post #%2$s"
 msgstr ""
 
 #. translators: %s: Meta key name.
-#: includes/class-ddp-duplicates.php:624
+#: includes/class-ddp-duplicates.php:873
 #, php-format
 msgid "Meta value (%s)"
 msgstr ""
 
 #. translators: 1: Number of duplicates, 2: Time in seconds, 3: Status data, 4: Memory usage
-#: includes/class-ddp-duplicates.php:743
+#: includes/class-ddp-duplicates.php:982
 #, php-format
 msgid "Duplicates found: %1$d, Time: %2$s sec. %3$s Mem usage: %4$s"
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:751
+#: includes/class-ddp-duplicates.php:990
 msgid "Error: Choose post types to check."
 msgstr ""
 
 #. translators: 1: Number of duplicates found, 2: Time in seconds.
-#: includes/class-ddp-duplicates.php:768
+#: includes/class-ddp-duplicates.php:1007
 #, php-format
 msgid "Duplicates found: %1$s. Time: %2$s sec."
 msgstr ""
 
 #. translators: %s: Original (kept) post ID.
-#: includes/class-ddp-duplicates.php:901
+#: includes/class-ddp-duplicates.php:1148
 #, php-format
 msgid "Same excerpt as post #%s"
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:902
+#: includes/class-ddp-duplicates.php:1149
 msgid "Shared excerpt"
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:937
+#. translators: %s: Original (kept) post ID.
+#: includes/class-ddp-duplicates.php:1262
+#, php-format
+msgid "Same content as post #%s"
+msgstr ""
+
+#: includes/class-ddp-duplicates.php:1263
+msgid "Shared content"
+msgstr ""
+
+#: includes/class-ddp-duplicates.php:1298
 msgid "Automatic CRON job running."
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:939
+#: includes/class-ddp-duplicates.php:1300
 msgid "Manually cleaning."
 msgstr ""
 
-#. translators: Debug notice. 1: type of duplicate. 2: The title of the post. 3: The ID. 4: Time spent deleting.
-#: includes/class-ddp-duplicates.php:1017
-#, php-format
-msgid "DEBUG: Deleted %1$s %2$s (id: %3$s) in %4$s sec."
-msgstr ""
-
 #. translators: 1: Number of deleted duplicate posts, 2: Time in seconds.
-#: includes/class-ddp-duplicates.php:1026
+#: includes/class-ddp-duplicates.php:1383
 #, php-format
 msgid "A total of %1$s duplicate posts were deleted in %2$s sec."
 msgstr ""
 
 #. translators: %s: Email recipient list.
-#: includes/class-ddp-duplicates.php:1062
-#, php-format
-msgid "DEBUG: Sending email to: %s"
-msgstr ""
-
-#. translators: %s: Email recipient list.
-#: includes/class-ddp-duplicates.php:1067
+#: includes/class-ddp-duplicates.php:1419
+#: includes/class-ddp-duplicates.php:1505
 #, php-format
 msgid "Status email sent to %s."
 msgstr ""
 
 #. translators: %s: Email address field value.
-#: includes/class-ddp-duplicates.php:1071
+#: includes/class-ddp-duplicates.php:1423
+#: includes/class-ddp-duplicates.php:1509
 #, php-format
 msgid "Not a valid email %s."
 msgstr ""
 
 #. translators: %s: Number of duplicates deleted.
-#: includes/class-ddp-duplicates.php:1081
+#: includes/class-ddp-duplicates.php:1433
 #, php-format
 msgid "A total of %s duplicates were deleted."
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:1115
+#. translators: 1: Number of duplicates that would be removed, 2: Time in seconds.
+#: includes/class-ddp-duplicates.php:1463
+#, php-format
+msgid "Report-only cron: %1$s duplicate(s) would be removed (scanned in %2$s sec). Nothing was deleted."
+msgstr ""
+
+#. translators: %s: Number of duplicates that would be removed.
+#: includes/class-ddp-duplicates.php:1518
+#, php-format
+msgid "Report-only: %s duplicate(s) would be removed. Nothing was deleted."
+msgstr ""
+
+#: includes/class-ddp-duplicates.php:1553
+msgid "Would be removed"
+msgstr ""
+
+#: includes/class-ddp-duplicates.php:1554
 msgid "Removed"
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:1117
+#: includes/class-ddp-duplicates.php:1557
 msgid "Matched on"
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:1121
+#: includes/class-ddp-duplicates.php:1561
 msgid "Post types scanned"
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:1127
+#: includes/class-ddp-duplicates.php:1567
 msgid "Post statuses"
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:1131
+#: includes/class-ddp-duplicates.php:1571
 msgid "Kept"
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:1132
+#: includes/class-ddp-duplicates.php:1572
 msgid "Newest copy"
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:1133
+#: includes/class-ddp-duplicates.php:1573
 msgid "Oldest copy"
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:1135
+#: includes/class-ddp-duplicates.php:1575
 msgid "Moved to Trash"
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:1138
+#: includes/class-ddp-duplicates.php:1578
 msgid "Deleted permanently"
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:1141
+#: includes/class-ddp-duplicates.php:1581
 msgid "Removal"
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:1143
+#. translators: %s: Trash or permanent label describing what would happen.
+#: includes/class-ddp-duplicates.php:1584
+#, php-format
+msgid "Report only — would use: %s"
+msgstr ""
+
+#: includes/class-ddp-duplicates.php:1589
 msgid "Run type"
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:1144
+#: includes/class-ddp-duplicates.php:1590
+msgid "Scheduled report-only (cron) run"
+msgstr ""
+
+#: includes/class-ddp-duplicates.php:1592
 msgid "Manual run"
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:1145
+#: includes/class-ddp-duplicates.php:1593
 msgid "Scheduled (cron) run"
 msgstr ""
 
 #. translators: %s: Custom field (meta) key.
-#: includes/class-ddp-duplicates.php:1168
+#: includes/class-ddp-duplicates.php:1617
 #, php-format
 msgid "Identical custom field value (%s)"
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:1170
+#: includes/class-ddp-duplicates.php:1619
 msgid "Identical custom field value"
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:1173
+#: includes/class-ddp-duplicates.php:1622
 msgid "Identical excerpt"
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:1175
+#: includes/class-ddp-duplicates.php:1625
+msgid "Identical post content"
+msgstr ""
+
+#: includes/class-ddp-duplicates.php:1627
 msgid "Identical title"
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:1209
+#: includes/class-ddp-duplicates.php:1662
 msgid "manual run"
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:1210
+#: includes/class-ddp-duplicates.php:1663
 msgid "scheduled run"
 msgstr ""
 
+#. translators: 1: Number that would be removed, 2: Blog name, 3: Run type.
+#: includes/class-ddp-duplicates.php:1668
+#, php-format
+msgid "[%2$s] %1$s duplicates would be removed (%3$s)"
+msgstr ""
+
 #. translators: 1: Number removed, 2: Blog name, 3: Run type.
-#: includes/class-ddp-duplicates.php:1214
+#: includes/class-ddp-duplicates.php:1677
 #, php-format
 msgid "[%2$s] %1$s duplicates removed (%3$s)"
 msgstr ""
 
+#. translators: %s: Number of duplicate posts that would be removed.
+#: includes/class-ddp-duplicates.php:1701
+#: includes/class-ddp-duplicates.php:1849
+#, php-format
+msgid "%s duplicate posts would be removed"
+msgstr ""
+
+#. translators: %s: Blog name.
+#: includes/class-ddp-duplicates.php:1704
+#: includes/class-ddp-duplicates.php:1853
+#, php-format
+msgid "Hi Admin, here's a report-only scan summary for %s. Nothing was deleted."
+msgstr ""
+
 #. translators: %s: Number of duplicate posts deleted in this run.
-#: includes/class-ddp-duplicates.php:1236
-#: includes/class-ddp-duplicates.php:1371
+#: includes/class-ddp-duplicates.php:1709
+#: includes/class-ddp-duplicates.php:1858
 #, php-format
 msgid "%s duplicate posts removed"
 msgstr ""
 
 #. translators: %s: Blog name.
-#: includes/class-ddp-duplicates.php:1240
-#: includes/class-ddp-duplicates.php:1375
+#: includes/class-ddp-duplicates.php:1712
+#: includes/class-ddp-duplicates.php:1862
 #, php-format
 msgid "Hi Admin, here's a summary of the latest cleanup on %s."
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:1244
+#: includes/class-ddp-duplicates.php:1717
 msgid "View your site"
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:1245
+#: includes/class-ddp-duplicates.php:1718
 msgid "Run summary"
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:1265
-#: includes/class-ddp-duplicates.php:1389
+#: includes/class-ddp-duplicates.php:1741
+#: includes/class-ddp-duplicates.php:1877
 msgid "From the team behind Delete Duplicate Posts"
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:1266
-#: includes/class-ddp-duplicates.php:1390
-msgid ""
-"We build simple tools that keep WordPress sites clean, fast and secure. You "
-"might also like:"
+#: includes/class-ddp-duplicates.php:1742
+#: includes/class-ddp-duplicates.php:1878
+msgid "We build simple tools that keep WordPress sites clean, fast and secure. You might also like:"
 msgstr ""
 
 #. translators: %s: Linked plugin name "Delete Duplicate Posts".
 #. translators: %s: Plugin name "Delete Duplicate Posts".
-#: includes/class-ddp-duplicates.php:1270
-#: includes/class-ddp-duplicates.php:1403
+#: includes/class-ddp-duplicates.php:1746
+#: includes/class-ddp-duplicates.php:1891
 #, php-format
-msgid ""
-"You are receiving this email because email notifications are enabled in %s."
-msgstr ""
-
-#. Plugin Name of the plugin/theme
-#: includes/class-ddp-duplicates.php:1271
-#: includes/class-ddp-duplicates.php:1404
-msgid "Delete Duplicate Posts"
+msgid "You are receiving this email because email notifications are enabled in %s."
 msgstr ""
 
 #. translators: %s: Linked text "cleverplugins.com".
 #. translators: %s: "cleverplugins.com".
-#: includes/class-ddp-duplicates.php:1276
-#: includes/class-ddp-duplicates.php:1408
+#: includes/class-ddp-duplicates.php:1752
+#: includes/class-ddp-duplicates.php:1896
 #, php-format
 msgid "Made with care by %s"
 msgstr ""
 
-#. Author of the plugin/theme
-#: includes/class-ddp-duplicates.php:1277
-msgid "cleverplugins.com"
-msgstr ""
-
-#: includes/class-ddp-duplicates.php:1287
+#: includes/class-ddp-duplicates.php:1763
 msgid "Deleted Duplicate Posts Status"
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:1379
+#: includes/class-ddp-duplicates.php:1867
 msgid "View your site:"
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:1381
+#: includes/class-ddp-duplicates.php:1869
 msgid "RUN SUMMARY"
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:1423
+#: includes/class-ddp-duplicates.php:1911
+#: sidebar.php:58
+#: sidebar.php:60
 msgid "WP Security Ninja"
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:1424
-msgid ""
-"Complete WordPress protection — firewall, malware scanner, scheduled scans "
-"and security tests."
+#: includes/class-ddp-duplicates.php:1912
+msgid "Complete WordPress protection — firewall, malware scanner, scheduled scans and security tests."
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:1428
+#: includes/class-ddp-duplicates.php:1916
 msgid "SEO Booster"
 msgstr ""
 
-#: includes/class-ddp-duplicates.php:1429
-msgid ""
-"Find and fix the keywords your site already ranks for and grow your search "
-"traffic."
+#: includes/class-ddp-duplicates.php:1917
+msgid "Find and fix the keywords your site already ranks for and grow your search traffic."
 msgstr ""
 
 #: includes/class-ddp-install.php:30
@@ -855,158 +1422,175 @@ msgstr ""
 msgid "Error: Log is empty.. do something :-)"
 msgstr ""
 
-#. translators: 1: Current URL, 2: Target URL
-#: includes/class-ddp-redirects.php:48
-#, php-format
-msgid "DEBUG: Redirected from %1$s to %2$s"
+#: includes/class-ddp-redirect-provider-redirection.php:55
+#: includes/class-ddp-redirect-provider-redirection.php:113
+#: includes/class-ddp-redirects.php:641
+msgid "The Redirection plugin is not available."
 msgstr ""
 
-#: includes/class-ddp-redirects.php:78
+#: includes/class-ddp-redirect-provider-redirection.php:68
+msgid "Could not create a Redirection group for Delete Duplicate Posts."
+msgstr ""
+
+#: includes/class-ddp-redirect-provider-redirection.php:124
+#: includes/class-ddp-redirects.php:154
+msgid "Invalid redirect source or target."
+msgstr ""
+
+#: includes/class-ddp-redirect-provider-redirection.php:131
+msgid "A redirect for this source URL already exists in Redirection."
+msgstr ""
+
+#: includes/class-ddp-redirect-provider-redirection.php:398
+msgid "The installed Redirection version does not provide the required deletion API."
+msgstr ""
+
+#: includes/class-ddp-redirects.php:146
+msgid "URL preservation is disabled."
+msgstr ""
+
+#. translators: 1: Provider name, 2: Source URL.
+#: includes/class-ddp-redirects.php:172
+#, php-format
+msgid "Skipped duplicate %1$s redirect for %2$s"
+msgstr ""
+
+#. translators: 1: Provider name, 2: Error message.
+#: includes/class-ddp-redirects.php:183
+#, php-format
+msgid "Could not create %1$s redirect: %2$s"
+msgstr ""
+
+#. translators: 1: HTTP status code, 2: Provider, 3: From URL, 4: Target URL.
+#: includes/class-ddp-redirects.php:194
+#, php-format
+msgid "Created %1$s redirect (%2$s) from %3$s to %4$s"
+msgstr ""
+
+#: includes/class-ddp-redirects.php:229
+msgid "A built-in redirect for this source URL already exists."
+msgstr ""
+
+#: includes/class-ddp-redirects.php:247
+msgid "Could not save the built-in redirect."
+msgstr ""
+
+#: includes/class-ddp-redirects.php:323
+#: includes/class-ddp-redirects.php:729
+msgid "Redirects stored in the Redirection plugin are not managed here."
+msgstr ""
+
+#: includes/class-ddp-redirects.php:328
 msgid "No redirects selected for deletion."
 msgstr ""
 
-#: includes/class-ddp-redirects.php:93
+#: includes/class-ddp-redirects.php:340
+msgid "No valid redirects selected for deletion."
+msgstr ""
+
+#: includes/class-ddp-redirects.php:346
 msgid "An error occurred while deleting redirects."
 msgstr ""
 
 #. translators: %d: Number of deleted redirects
-#: includes/class-ddp-redirects.php:101
+#: includes/class-ddp-redirects.php:354
 #, php-format
 msgid "Deleted %d redirects."
 msgstr ""
 
-#: includes/class-ddp-redirects.php:110
-msgid "No valid redirects selected for deletion."
+#: includes/class-ddp-redirects.php:376
+#: includes/class-ddp-redirects.php:402
+msgid "You do not have sufficient permissions to perform this action or the security check failed."
 msgstr ""
 
-#: includes/class-ddp-redirects.php:129
-msgid ""
-"You do not have sufficient permissions to perform this action or the "
-"security check failed."
+#: includes/class-ddp-redirects.php:673
+msgid "The redirect was created in Redirection, but the built-in row could not be removed."
 msgstr ""
 
-#: includes/class-ddp-redirects.php:138
-msgid "Table does not exist"
-msgstr ""
-
-#. translators: Notice for creating a redirect from a to b. Value 1 is HTTP status code (ie 301), 2 is from and 3 is target URL.
-#: includes/class-ddp-redirects.php:233
+#. translators: 1: Moved count, 2: Already-present count removed locally, 3: Failed count.
+#: includes/class-ddp-redirects.php:681
 #, php-format
-msgid "Created %1$s redirect from %2$s to %3$s"
+msgid "Moved redirects to Redirection: %1$d moved, %2$d already there and removed here, %3$d failed."
 msgstr ""
 
-#: includes/class-ddp-settings.php:147
+#: includes/class-ddp-redirects.php:742
+msgid "Could not open CSV stream."
+msgstr ""
+
+#: includes/class-ddp-settings.php:401
 msgid "Rendering Help Scouts beacon for easy help and support"
 msgstr ""
 
-#: includes/class-ddp-settings.php:154
-msgid ""
-"Your email is added to cleverplugins.com newsletter. Unsubscribe any time."
+#: includes/class-ddp-settings.php:408
+msgid "Your email is added to cleverplugins.com newsletter. Unsubscribe any time."
+msgstr ""
+
+#: sidebar.php:12
+msgid "Products and updates"
 msgstr ""
 
 #. translators: %s: Number of deleted posts
-#: sidebar.php:28
+#: sidebar.php:29
 #, php-format
 msgid "%s duplicates deleted!"
 msgstr ""
 
-#: sidebar.php:42
-msgid "Awesome Features"
+#: sidebar.php:44
+msgid "Need deeper matching or URL protection?"
 msgstr ""
 
-#: sidebar.php:43
-msgid "Upgrade Now!"
+#: sidebar.php:45
+msgid "Pro adds content, excerpt, and meta matching, permanent deletion, 301 URL preservation (built-in or Redirection), and CSV export."
 msgstr ""
 
-#: sidebar.php:50
-msgid "We recommend you always make a backup before running this tool."
+#: sidebar.php:48
+msgid "Compare Free and Pro"
 msgstr ""
 
-#: sidebar.php:55
+#: sidebar.php:61
+msgid "Trusted by 100,000+ WordPress sites."
+msgstr ""
+
+#: sidebar.php:62
+msgid "Firewall, malware scanning, and 50+ security tests in one plugin. Start free. Pro adds a cloud firewall, scheduled scans, and login hardening."
+msgstr ""
+
+#: sidebar.php:64
+msgid "Get protected"
+msgstr ""
+
+#: sidebar.php:69
 msgid "Newsletter"
 msgstr ""
 
-#: sidebar.php:56
-msgid ""
-"Sign up to our newsletter to receive the latest tips and updates directly to "
-"your inbox. Ensure your WordPress site remains efficient and duplicate-free!"
+#: sidebar.php:70
+msgid "Get occasional tips and updates from cleverplugins.com. Unsubscribe any time."
 msgstr ""
 
-#: sidebar.php:59 sidebar.php:60
+#: sidebar.php:73
+#: sidebar.php:74
 msgid "Name"
 msgstr ""
 
-#: sidebar.php:63 sidebar.php:64
+#: sidebar.php:77
+#: sidebar.php:78
 msgid "Email"
 msgstr ""
 
-#: sidebar.php:72
-msgid ""
-"Yes, sign me up for the newsletter. I agree to receive emails and can "
-"unsubscribe anytime."
+#: sidebar.php:86
+msgid "Yes, sign me up for the newsletter. I agree to receive emails and can unsubscribe anytime."
 msgstr ""
 
-#: sidebar.php:76
+#: sidebar.php:90
 msgid "Subscribe"
 msgstr ""
 
 #. translators: %s: Privacy Policy link, linked text is "Privacy Policy".
-#: sidebar.php:83
+#: sidebar.php:97
 #, php-format
 msgid "You can unsubscribe anytime. For more details, review our %s."
 msgstr ""
 
-#: sidebar.php:84
+#: sidebar.php:98
 msgid "Privacy Policy"
-msgstr ""
-
-#: sidebar.php:92
-msgid "Our other plugins"
-msgstr ""
-
-#: sidebar.php:93 sidebar.php:98
-msgid "Visit wpsecurityninja.com"
-msgstr ""
-
-#: sidebar.php:95
-msgid "WordPress Security made easy"
-msgstr ""
-
-#: sidebar.php:96
-msgid ""
-"Complete WordPress site protection with firewall, malware scanner, scheduled "
-"scans, security tests and much more - all you need to keep your website "
-"secure. Free trial."
-msgstr ""
-
-#: sidebar.php:102
-msgid "Need help?"
-msgstr ""
-
-#: sidebar.php:103
-msgid "Email support only for pro customers."
-msgstr ""
-
-#: sidebar.php:104
-msgid "Free users:"
-msgstr ""
-
-#: sidebar.php:104
-msgid "Support Forum on WordPress.org"
-msgstr ""
-
-#: sidebar.php:107
-msgid "Recreate Databases"
-msgstr ""
-
-#. Plugin URI of the plugin/theme
-#. Author URI of the plugin/theme
-msgid "https://cleverplugins.com"
-msgstr ""
-
-#. Description of the plugin/theme
-msgid ""
-"Remove duplicate blogposts on your blog! Searches and removes duplicate "
-"posts and their post meta tags. You can delete posts, pages and other Custom "
-"Post Types enabled on your website."
 msgstr ""

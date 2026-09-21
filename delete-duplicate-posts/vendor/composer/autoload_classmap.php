@@ -10,8 +10,10 @@ return array(
     'DeleteDuplicatePosts\\DDP_Admin' => $baseDir . '/includes/class-ddp-admin.php',
     'DeleteDuplicatePosts\\DDP_Duplicates' => $baseDir . '/includes/class-ddp-duplicates.php',
     'DeleteDuplicatePosts\\DDP_Install' => $baseDir . '/includes/class-ddp-install.php',
+    'DeleteDuplicatePosts\\DDP_Links' => $baseDir . '/includes/class-ddp-links.php',
     'DeleteDuplicatePosts\\DDP_Logger' => $baseDir . '/includes/class-ddp-logger.php',
     'DeleteDuplicatePosts\\DDP_Plugin' => $baseDir . '/includes/class-ddp-plugin.php',
+    'DeleteDuplicatePosts\\DDP_Redirect_Provider_Redirection' => $baseDir . '/includes/class-ddp-redirect-provider-redirection.php',
     'DeleteDuplicatePosts\\DDP_Redirects' => $baseDir . '/includes/class-ddp-redirects.php',
     'DeleteDuplicatePosts\\DDP_Settings' => $baseDir . '/includes/class-ddp-settings.php',
 );

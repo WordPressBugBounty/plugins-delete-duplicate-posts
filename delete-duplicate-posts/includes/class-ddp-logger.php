@@ -115,6 +115,13 @@ class DDP_Logger {
 		global $wpdb;
 		$ddp_logtable = $wpdb->prefix . 'ddp_log';
 
+		// Avoid noisy fatals/notices when the table is missing (fresh installs / tests).
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name is prefixed constant.
+		$table_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $ddp_logtable ) );
+		if ( $ddp_logtable !== $table_exists ) {
+			return;
+		}
+
 		// Insert log entry
 		$insert_result = $wpdb->insert(
 			$ddp_logtable,
@@ -126,7 +133,6 @@ class DDP_Logger {
 		);
 
 		if ( false === $insert_result ) {
-			// Handle error appropriately (e.g., log or throw exception)
 			return;
 		}
 

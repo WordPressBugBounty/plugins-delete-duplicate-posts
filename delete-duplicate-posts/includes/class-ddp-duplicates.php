@@ -56,15 +56,18 @@ class DDP_Duplicates {
         $cleaned_posts = array();
         foreach ( $checked_posts as $cp ) {
             if ( !empty( $cp['ID'] ) && !empty( $cp['orgID'] ) && is_numeric( $cp['ID'] ) && is_numeric( $cp['orgID'] ) ) {
-                $cleaned_posts[] = array(
+                $pair = array(
                     'ID'    => intval( $cp['ID'] ),
                     'orgID' => intval( $cp['orgID'] ),
                 );
+                if ( self::is_valid_duplicate_pair( $pair['ID'], $pair['orgID'] ) ) {
+                    $cleaned_posts[] = $pair;
+                }
             }
         }
         // Check if any valid posts were found
         if ( empty( $cleaned_posts ) ) {
-            wp_send_json_error( __( 'Invalid duplicates selected.', 'delete-duplicate-posts' ) );
+            wp_send_json_error( __( 'No valid duplicate pairs remain to delete. Refresh the list and try again.', 'delete-duplicate-posts' ) );
             return;
         }
         // Attempt to clean duplicates and handle possible failures
@@ -75,6 +78,68 @@ class DDP_Duplicates {
         if ( $return_data ) {
             return $result;
         }
+    }
+
+    /**
+     * Re-check that a client-submitted ID/orgID pair still matches current settings.
+     *
+     * Used only by the manual AJAX delete path. Cron already re-scans before deleting.
+     *
+     * @param int $dupe_id Post ID to remove.
+     * @param int $org_id  Post ID to keep.
+     * @return bool
+     */
+    public static function is_valid_duplicate_pair( $dupe_id, $org_id ) {
+        $dupe_id = absint( $dupe_id );
+        $org_id = absint( $org_id );
+        if ( $dupe_id < 1 || $org_id < 1 || $dupe_id === $org_id ) {
+            return false;
+        }
+        $dupe = get_post( $dupe_id );
+        $org = get_post( $org_id );
+        if ( !$dupe || !$org ) {
+            return false;
+        }
+        $options = DDP_Settings::get_options();
+        $exclude_ids = DDP_Settings::get_exclude_ids();
+        if ( !empty( $exclude_ids ) && in_array( $dupe_id, $exclude_ids, true ) ) {
+            return false;
+        }
+        $allowed_types = ( isset( $options['ddp_pts'] ) && is_array( $options['ddp_pts'] ) ? $options['ddp_pts'] : array() );
+        if ( !empty( $allowed_types ) ) {
+            if ( !in_array( $dupe->post_type, $allowed_types, true ) || !in_array( $org->post_type, $allowed_types, true ) ) {
+                return false;
+            }
+        }
+        $post_stati = array('publish');
+        if ( in_array( 'attachment', $allowed_types, true ) && !in_array( 'inherit', $post_stati, true ) ) {
+            $post_stati[] = 'inherit';
+        }
+        if ( !in_array( $dupe->post_status, $post_stati, true ) || !in_array( $org->post_status, $post_stati, true ) ) {
+            return false;
+        }
+        $comparemethod = 'titlecompare';
+        $matches = false;
+        if ( 'titlecompare' === $comparemethod ) {
+            $matches = $dupe->post_title === $org->post_title;
+        }
+        if ( !$matches ) {
+            return false;
+        }
+        // Keep preference uses MIN/MAX ID in scan SQL — org must still be that keeper.
+        $keep = ( isset( $options['ddp_keep'] ) ? $options['ddp_keep'] : 'oldest' );
+        $agg = ( 'latest' === $keep ? 'MAX' : 'MIN' );
+        global $wpdb;
+        $type_sql = "'" . esc_sql( $dupe->post_type ) . "'";
+        $status_in = implode( ', ', array_map( static function ( $status ) {
+            return "'" . esc_sql( $status ) . "'";
+        }, $post_stati ) );
+        $keeper_id = 0;
+        if ( 'titlecompare' === $comparemethod ) {
+            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $agg is a fixed MIN/MAX token.
+            $keeper_id = (int) $wpdb->get_var( $wpdb->prepare( "SELECT {$agg}(ID) FROM {$wpdb->posts}\n\t\t\t\t\tWHERE post_title = %s\n\t\t\t\t\tAND post_type = {$type_sql}\n\t\t\t\t\tAND post_status IN ( {$status_in} )\n\t\t\t\t\tAND post_type NOT IN ('nav_menu_item')", $dupe->post_title ) );
+        }
+        return $keeper_id === $org_id && $keeper_id !== $dupe_id;
     }
 
     /**
@@ -111,6 +176,12 @@ class DDP_Duplicates {
                 $orgTitle = ( '' === $dupe['orgtitle'] ? '-empty-' : $dupe['orgtitle'] );
                 $permalink = esc_url( get_permalink( $dupe['ID'] ) );
                 $orgPermalink = esc_url( get_permalink( $dupe['orgID'] ) );
+                $dupe_post = get_post( $dupe['ID'] );
+                $org_post = get_post( $dupe['orgID'] );
+                $dupe_meta = self::format_pair_meta_line( $dupe_post );
+                $org_meta = self::format_pair_meta_line( $org_post );
+                $dupe_meta_html = ( '' !== $dupe_meta ? '<div class="ddp-pair-meta">' . esc_html( $dupe_meta ) . '</div>' : '' );
+                $org_meta_html = ( '' !== $org_meta ? '<div class="ddp-pair-meta">' . esc_html( $org_meta ) . '</div>' : '' );
                 // When the match is based on a field that is not already visible
                 // (excerpt, meta value), show the shared value in BOTH columns so the
                 // comparison can be verified at a glance.
@@ -126,26 +197,122 @@ class DDP_Duplicates {
                     'ID'        => esc_html( $dupe['ID'] ),
                     'orgID'     => esc_html( $dupe['orgID'] ),
                     'duplicate' => sprintf(
-                        '<a href="%s" target="_blank" title="%s">%s</a> <span class="ddp-id">#%s</span><div class="ddp-why">%s</div>%s',
+                        '<span class="ddp-col-label ddp-col-label--remove">%s</span><a href="%s" target="_blank" rel="noopener noreferrer" title="%s">%s</a> <span class="ddp-id">#%s</span>%s<div class="ddp-why">%s</div>%s',
+                        esc_html__( 'Remove', 'delete-duplicate-posts' ),
                         esc_url( $permalink ),
                         esc_attr( $type_status ),
                         esc_html( $title ),
                         esc_html( $dupe['ID'] ),
+                        $dupe_meta_html,
                         esc_html( $dupe['why'] ),
                         $match_snippet
                     ),
                     'original'  => sprintf(
-                        '<a href="%s" target="_blank">%s</a> <span class="ddp-id">#%s</span>%s',
+                        '<span class="ddp-col-label ddp-col-label--keep">%s</span><a href="%s" target="_blank" rel="noopener noreferrer">%s</a> <span class="ddp-id">#%s</span>%s%s',
+                        esc_html__( 'Keep', 'delete-duplicate-posts' ),
                         esc_url( $orgPermalink ),
                         esc_html( $orgTitle ),
                         esc_html( $dupe['orgID'] ),
+                        $org_meta_html,
                         $match_snippet
                     ),
+                    'title'     => esc_html( $title ),
+                    'orgtitle'  => esc_html( $orgTitle ),
                 );
             }
         }
         wp_send_json( $response );
         exit;
+    }
+
+    /**
+     * Compact date · author line for a duplicates-table cell.
+     *
+     * @param \WP_Post|null $post Post object.
+     * @return string Plain-text meta line, or empty when nothing useful is available.
+     */
+    public static function format_pair_meta_line( $post ) {
+        if ( !$post || empty( $post->ID ) ) {
+            return '';
+        }
+        $parts = array();
+        $date = get_the_date( '', $post );
+        if ( is_string( $date ) && '' !== $date ) {
+            $parts[] = $date;
+        }
+        $author_id = ( isset( $post->post_author ) ? (int) $post->post_author : 0 );
+        if ( $author_id > 0 ) {
+            $author = get_the_author_meta( 'display_name', $author_id );
+            if ( is_string( $author ) && '' !== $author ) {
+                $parts[] = $author;
+            }
+        }
+        return implode( ' · ', $parts );
+    }
+
+    /**
+     * Whether post content has any non-whitespace visible text.
+     *
+     * Mirrors the SQL REPLACE/TRIM control-byte strip used in content compare.
+     *
+     * @param string $content Post content.
+     * @return bool
+     */
+    public static function post_content_has_visible_text( $content ) {
+        $stripped = str_replace( array(
+            "\t",
+            "\n",
+            "\v",
+            "\f",
+            "\r"
+        ), '', (string) $content );
+        return '' !== trim( $stripped );
+    }
+
+    /**
+     * SQL fragment excluding protected post IDs from the "to delete" side.
+     *
+     * @param string $column_sql Column expression (e.g. 'ID', 't1.ID', 'p.ID').
+     * @return string Empty string or " AND column NOT IN (…)" with int IDs only.
+     */
+    public static function sql_not_in_excluded_ids( $column_sql ) {
+        $ids = DDP_Settings::get_exclude_ids();
+        if ( empty( $ids ) ) {
+            return '';
+        }
+        $list = implode( ', ', array_map( 'intval', $ids ) );
+        return ' AND ' . $column_sql . ' NOT IN ( ' . $list . ' )';
+    }
+
+    /**
+     * Drop pairs whose removable ID is in the exclude list.
+     *
+     * @param array $json_response Response from return_duplicates().
+     * @return array
+     */
+    public static function filter_excluded_dupe_pairs( $json_response ) {
+        if ( empty( $json_response['dupes'] ) || !is_array( $json_response['dupes'] ) ) {
+            return $json_response;
+        }
+        $exclude = DDP_Settings::get_exclude_ids();
+        if ( empty( $exclude ) ) {
+            return $json_response;
+        }
+        $lookup = array_fill_keys( $exclude, true );
+        $filtered = array();
+        foreach ( $json_response['dupes'] as $dupe ) {
+            $id = ( isset( $dupe['ID'] ) ? (int) $dupe['ID'] : 0 );
+            if ( isset( $lookup[$id] ) ) {
+                continue;
+            }
+            $filtered[] = $dupe;
+        }
+        $removed = count( $json_response['dupes'] ) - count( $filtered );
+        $json_response['dupes'] = $filtered;
+        if ( $removed > 0 && isset( $json_response['dupescount'] ) ) {
+            $json_response['dupescount'] = max( 0, (int) $json_response['dupescount'] - $removed );
+        }
+        return $json_response;
     }
 
     /**
@@ -219,7 +386,10 @@ class DDP_Duplicates {
         $comparemethod = 'titlecompare';
         $return_duplicates_time = false;
         global $ddp_fs;
-        $json_response = array();
+        $json_response = array(
+            'dupes'      => array(),
+            'dupescount' => 0,
+        );
         // @ check compare method - maybe change lookup routine?
         global $wpdb;
         $table_name = $wpdb->prefix . 'posts';
@@ -274,24 +444,16 @@ class DDP_Duplicates {
                 }
                 $wpdb->query( 'SET SQL_BIG_SELECTS=1' );
                 $resultsoutput = ' ORDER BY ID LIMIT ' . intval( $limit ) . ' OFFSET ' . intval( $offset );
-                if ( $options['ddp_debug'] ) {
-                    DDP_Logger::log( 'DEBUG: SQL - Setting SET SQL_BIG_SELECTS=1' );
-                }
-                $thisquery = "SELECT * FROM (\n\t\t\t\t\t\t\t\t\t\t\t\tSELECT t1.ID, t1.post_title, t1.post_type, t1.post_status, save_this_post_id \n\t\t\t\t\t\t\t\t\t\t\t\tFROM {$table_name} AS t1 \n\t\t\t\t\t\t\t\t\t\t\t\tINNER JOIN ( \n\t\t\t\t\t\t\t\t\t\t\t\t\tSELECT post_title, {$minmax} AS save_this_post_id \n\t\t\t\t\t\t\t\t\t\t\t\t\tFROM {$table_name} \n\t\t\t\t\t\t\t\t\t\t\t\t\tWHERE post_type IN ( {$ddp_pts} ) \n\t\t\t\t\t\t\t\t\t\t\t\t\tAND post_type NOT IN ('nav_menu_item') \n\t\t\t\t\t\t\t\t\t\t\t\t\tAND post_status IN ( {$post_stati} ) \n\t\t\t\t\t\t\t\t\t\t\t\t\tGROUP BY post_title \n\t\t\t\t\t\t\t\t\t\t\t\t\tHAVING COUNT(*) > 1 \n\t\t\t\t\t\t\t\t\t\t\t\t\t) AS t2 ON t1.post_title = t2.post_title \n\t\t\t\t\t\t\t\t\t\t\t\t\tWHERE t1.post_status IN ( {$post_stati} )\n\t\t\t\t\t\t\t\t\t\t\t\t\tAND t1.post_type NOT IN ('nav_menu_item')\n\t\t\t\t\t\t\t\t\t\t\t\t\tORDER BY t1.post_title, t1.post_date DESC\n\t\t\t\t\t\t\t\t\t\t\t\t\t) AS derived_table\n\t\t\t\t\t\t\t\t\t\t\t\t\tWHERE ID != save_this_post_id\n\t\t\t\t\t\t\t\t\t\t\t\t\t{$resultsoutput}";
-                if ( $options['ddp_debug'] ) {
-                    DDP_Logger::log( 'DEBUG: SQL ' . esc_attr( $thisquery ) );
-                }
+                $exclude_sql = self::sql_not_in_excluded_ids( 'ID' );
+                $thisquery = "SELECT * FROM (\n\t\t\t\t\t\t\t\t\t\t\t\tSELECT t1.ID, t1.post_title, t1.post_type, t1.post_status, save_this_post_id \n\t\t\t\t\t\t\t\t\t\t\t\tFROM {$table_name} AS t1 \n\t\t\t\t\t\t\t\t\t\t\t\tINNER JOIN ( \n\t\t\t\t\t\t\t\t\t\t\t\t\tSELECT post_title, {$minmax} AS save_this_post_id \n\t\t\t\t\t\t\t\t\t\t\t\t\tFROM {$table_name} \n\t\t\t\t\t\t\t\t\t\t\t\t\tWHERE post_type IN ( {$ddp_pts} ) \n\t\t\t\t\t\t\t\t\t\t\t\t\tAND post_type NOT IN ('nav_menu_item') \n\t\t\t\t\t\t\t\t\t\t\t\t\tAND post_status IN ( {$post_stati} ) \n\t\t\t\t\t\t\t\t\t\t\t\t\tGROUP BY post_title \n\t\t\t\t\t\t\t\t\t\t\t\t\tHAVING COUNT(*) > 1 \n\t\t\t\t\t\t\t\t\t\t\t\t\t) AS t2 ON t1.post_title = t2.post_title \n\t\t\t\t\t\t\t\t\t\t\t\t\tWHERE t1.post_status IN ( {$post_stati} )\n\t\t\t\t\t\t\t\t\t\t\t\t\tAND t1.post_type NOT IN ('nav_menu_item')\n\t\t\t\t\t\t\t\t\t\t\t\t\tORDER BY t1.post_title, t1.post_date DESC\n\t\t\t\t\t\t\t\t\t\t\t\t\t) AS derived_table\n\t\t\t\t\t\t\t\t\t\t\t\t\tWHERE ID != save_this_post_id\n\t\t\t\t\t\t\t\t\t\t\t\t\t{$exclude_sql}\n\t\t\t\t\t\t\t\t\t\t\t\t\t{$resultsoutput}";
                 $json_response['lookup_query'] = $thisquery;
                 $dupes = $wpdb->get_results( $thisquery, ARRAY_A );
                 // here we get total dupes - not cute, but the other approach not working.
-                $total_dupes_query = "SELECT COUNT(*) FROM (\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tSELECT t1.ID, t1.post_title, t1.post_type, t1.post_status, save_this_post_id \n\t\t\t\t\t\t\t\t\t\t\t\t\t\tFROM {$table_name} AS t1 \n\t\t\t\t\t\t\t\t\t\t\t\t\t\tINNER JOIN ( \n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tSELECT post_title, {$minmax} AS save_this_post_id \n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tFROM {$table_name} \n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tWHERE post_type IN ( {$ddp_pts} ) \n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tAND post_type NOT IN ('nav_menu_item') \n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tAND post_status IN ( {$post_stati} ) \n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tGROUP BY post_title \n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tHAVING COUNT(*)>1 \n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t) AS t2 \n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tON t1.post_title = t2.post_title \n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tWHERE t1.post_status IN ( {$post_stati} )\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tAND t1.post_type NOT IN ('nav_menu_item')\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t) AS derived_table\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tWHERE ID != save_this_post_id";
+                $total_dupes_query = "SELECT COUNT(*) FROM (\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tSELECT t1.ID, t1.post_title, t1.post_type, t1.post_status, save_this_post_id \n\t\t\t\t\t\t\t\t\t\t\t\t\t\tFROM {$table_name} AS t1 \n\t\t\t\t\t\t\t\t\t\t\t\t\t\tINNER JOIN ( \n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tSELECT post_title, {$minmax} AS save_this_post_id \n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tFROM {$table_name} \n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tWHERE post_type IN ( {$ddp_pts} ) \n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tAND post_type NOT IN ('nav_menu_item') \n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tAND post_status IN ( {$post_stati} ) \n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tGROUP BY post_title \n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tHAVING COUNT(*)>1 \n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t) AS t2 \n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tON t1.post_title = t2.post_title \n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tWHERE t1.post_status IN ( {$post_stati} )\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tAND t1.post_type NOT IN ('nav_menu_item')\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t) AS derived_table\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tWHERE ID != save_this_post_id\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t{$exclude_sql}";
                 $total_dupes = $wpdb->get_var( $total_dupes_query );
-                if ( $options['ddp_debug'] ) {
-                    DDP_Logger::log( 'DEBUG: SQL total_dupes_query ' . esc_attr( $total_dupes_query ) );
-                }
                 if ( '' !== $wpdb->last_error ) {
                     $last_error = htmlspecialchars( $wpdb->last_error, ENT_QUOTES );
-                    $json_response['lookup_error'] = htmlspecialchars( $wpdb->last_error, ENT_QUOTES );
+                    $json_response['lookup_error'] = $last_error;
                     DDP_Logger::log( sprintf( 
                         /* translators: 1: Database error message, 2: SQL query */
                         __( 'Look up error: %1$s %2$s', 'delete-duplicate-posts' ),
@@ -336,44 +498,6 @@ class DDP_Duplicates {
                 $statusdata .= ')';
             }
             $return_duplicates_time = DDP_Logger::timerstop( 'return_duplicates' );
-            if ( $options['ddp_debug'] ) {
-                $max = 5;
-                if ( isset( $json_response['dupes'] ) ) {
-                    $idlist = array();
-                    $step = 0;
-                    foreach ( $json_response['dupes'] as $dupe ) {
-                        if ( $step <= $max ) {
-                            $details = '';
-                            if ( isset( $dupe['ID'] ) ) {
-                                $details .= 'ID: ' . $dupe['ID'] . ' ';
-                            }
-                            if ( isset( $dupe['title'] ) ) {
-                                $details .= ' title: "' . $dupe['title'] . '" ';
-                            }
-                            if ( isset( $dupe['permalink'] ) ) {
-                                $details .= 'Permalink: ' . $dupe['permalink'] . ' ';
-                            }
-                            if ( isset( $dupe['status'] ) ) {
-                                $details .= 'Status: ' . $dupe['status'] . ' ';
-                            }
-                            if ( isset( $dupe['type'] ) ) {
-                                $details .= 'Type: ' . $dupe['type'] . ' ';
-                            }
-                            if ( isset( $dupe['orgID'] ) ) {
-                                $details .= 'orgID: ' . $dupe['orgID'] . ' ';
-                            }
-                            if ( isset( $dupe['orgtitle'] ) ) {
-                                $details .= 'orgtitle: ' . $dupe['orgtitle'] . ' ';
-                            }
-                            if ( isset( $dupe['orgpermalink'] ) ) {
-                                $details .= ' orgpermalink: ' . $dupe['orgpermalink'] . ' ';
-                            }
-                            DDP_Logger::log( $details );
-                        }
-                        ++$step;
-                    }
-                }
-            }
             if ( isset( $json_response['dupes'] ) ) {
                 DDP_Logger::log( sprintf(
                     /* translators: 1: Number of duplicates, 2: Time in seconds, 3: Status data, 4: Memory usage */
@@ -404,9 +528,13 @@ class DDP_Duplicates {
                 esc_html( $return_duplicates_time )
              );
         }
+        $json_response = self::filter_excluded_dupe_pairs( $json_response );
         if ( $return ) {
             return $json_response;
         }
+        // Never expose raw lookup SQL or DB error text to the browser. These keys
+        // are kept in the returned array for internal use, logging and tests only.
+        unset($json_response['lookup_query'], $json_response['lookup_error']);
         wp_send_json_success( $json_response );
     }
 
@@ -444,9 +572,13 @@ class DDP_Duplicates {
                 $new_item['title'] = get_the_title( $td['ID'] );
                 $lookup_arr['dupes'][] = $new_item;
             }
-            $dupes = $lookup_arr;
+            $dupes = self::filter_excluded_dupe_pairs( $lookup_arr );
         } else {
             $dupes = DDP_Duplicates::return_duplicates( true );
+        }
+        $cron_mode = ( isset( $options['ddp_cron_mode'] ) ? $options['ddp_cron_mode'] : 'report' );
+        if ( !$manualrun && 'report' === $cron_mode ) {
+            return self::finish_report_only_run( $dupes, $options );
         }
         $resultnote = '';
         $dispcount = 0;
@@ -454,9 +586,7 @@ class DDP_Duplicates {
         if ( isset( $dupes['dupes'] ) ) {
             foreach ( $dupes['dupes'] as $dupe ) {
                 $postid = $dupe['ID'];
-                $title = substr( $dupe['title'], 0, 35 );
                 if ( $postid ) {
-                    DDP_Logger::timerstart( 'deletepost_' . $postid );
                     $delete_mode = 'trash';
                     $post_type = get_post_type( $postid );
                     $force_delete = 'permanent' === $delete_mode;
@@ -467,7 +597,6 @@ class DDP_Duplicates {
                     } else {
                         $deleteresult = wp_trash_post( $postid );
                     }
-                    $timespent = DDP_Logger::timerstop( 'deletepost_' . $postid );
                     ++$dispcount;
                     $count_key = ( '' !== $post_type ? $post_type : 'unknown' );
                     $type_counts[$count_key] = ( isset( $type_counts[$count_key] ) ? $type_counts[$count_key] + 1 : 1 );
@@ -477,16 +606,6 @@ class DDP_Duplicates {
                         update_option( 'ddp_deleted_duplicates', $totaldeleted, false );
                     } else {
                         update_option( 'ddp_deleted_duplicates', 1, false );
-                    }
-                    if ( $options['ddp_debug'] ) {
-                        // translators: Debug notice. 1: type of duplicate. 2: The title of the post. 3: The ID. 4: Time spent deleting.
-                        DDP_Logger::log( sprintf(
-                            __( 'DEBUG: Deleted %1$s %2$s (id: %3$s) in %4$s sec.', 'delete-duplicate-posts' ),
-                            $dupe['type'],
-                            $title,
-                            $postid,
-                            $timespent
-                        ) );
                     }
                 }
             }
@@ -512,7 +631,8 @@ class DDP_Duplicates {
                 $blogurl,
                 $type_counts,
                 $manualrun,
-                $options
+                $options,
+                false
             );
             $messagebody = self::build_status_email( $email_data );
             $mailstatus = false;
@@ -530,10 +650,6 @@ class DDP_Duplicates {
                 );
                 remove_action( 'phpmailer_init', array(__CLASS__, 'add_plain_text_alt_body') );
                 self::$status_email_text = '';
-                if ( $options['ddp_debug'] ) {
-                    // translators: %s: Email recipient list.
-                    DDP_Logger::log( sprintf( __( 'DEBUG: Sending email to: %s', 'delete-duplicate-posts' ), $recipient_list ) );
-                }
                 if ( $mailstatus ) {
                     // translators: %s: Email recipient list.
                     DDP_Logger::log( sprintf( __( 'Status email sent to %s.', 'delete-duplicate-posts' ), $recipient_list ) );
@@ -556,13 +672,93 @@ class DDP_Duplicates {
     }
 
     /**
+     * Finish a scheduled report-only run: log, store preview, optional email — no deletions.
+     *
+     * @param array $dupes   Result from return_duplicates() or a manual pair list shape.
+     * @param array $options Plugin options.
+     * @return array
+     */
+    private static function finish_report_only_run( $dupes, $options ) {
+        $pair_list = ( isset( $dupes['dupes'] ) && is_array( $dupes['dupes'] ) ? $dupes['dupes'] : array() );
+        $dispcount = count( $pair_list );
+        $type_counts = array();
+        foreach ( $pair_list as $dupe ) {
+            $post_type = ( isset( $dupe['type'] ) ? $dupe['type'] : get_post_type( $dupe['ID'] ) );
+            $count_key = ( is_string( $post_type ) && '' !== $post_type ? $post_type : 'unknown' );
+            $type_counts[$count_key] = ( isset( $type_counts[$count_key] ) ? $type_counts[$count_key] + 1 : 1 );
+        }
+        $totaltimespent = DDP_Logger::timerstop( 'ddp_totaltime' );
+        DDP_Logger::log( sprintf( 
+            /* translators: 1: Number of duplicates that would be removed, 2: Time in seconds. */
+            __( 'Report-only cron: %1$s duplicate(s) would be removed (scanned in %2$s sec). Nothing was deleted.', 'delete-duplicate-posts' ),
+            $dispcount,
+            $totaltimespent
+         ) );
+        update_option( 'ddp_last_dry_run', array(
+            'time'        => time(),
+            'count'       => $dispcount,
+            'type_counts' => $type_counts,
+        ), false );
+        $json_response = array(
+            'totaltimespent' => $totaltimespent,
+            'deleted'        => 0,
+            'reported'       => $dispcount,
+            'dry_run'        => true,
+        );
+        if ( 0 < $dispcount && $options['ddp_statusmail'] ) {
+            $blogurl = esc_url( site_url() );
+            $recipients = DDP_Settings::parse_email_recipients( $options['ddp_statusmail_recipient'] );
+            $recipient_list = implode( ', ', $recipients );
+            $email_data = self::gather_status_email_data(
+                $dispcount,
+                $blogurl,
+                $type_counts,
+                false,
+                $options,
+                true
+            );
+            $messagebody = self::build_status_email( $email_data );
+            if ( !empty( $recipients ) ) {
+                $subject = self::build_status_email_subject( $email_data );
+                $headers = array('Content-Type: text/html; charset=UTF-8');
+                self::$status_email_text = self::build_status_email_text( $email_data );
+                add_action( 'phpmailer_init', array(__CLASS__, 'add_plain_text_alt_body') );
+                $mailstatus = wp_mail(
+                    $recipients,
+                    $subject,
+                    $messagebody,
+                    $headers
+                );
+                remove_action( 'phpmailer_init', array(__CLASS__, 'add_plain_text_alt_body') );
+                self::$status_email_text = '';
+                if ( $mailstatus ) {
+                    // translators: %s: Email recipient list.
+                    DDP_Logger::log( sprintf( __( 'Status email sent to %s.', 'delete-duplicate-posts' ), $recipient_list ) );
+                }
+            } else {
+                // translators: %s: Email address field value.
+                DDP_Logger::log( sprintf( __( 'Not a valid email %s.', 'delete-duplicate-posts' ), $options['ddp_statusmail_recipient'] ) );
+            }
+        }
+        $options['ddp_running'] = false;
+        DDP_Settings::save_options( $options );
+        $json_response['msg'] = sprintf( 
+            /* translators: %s: Number of duplicates that would be removed. */
+            esc_html__( 'Report-only: %s duplicate(s) would be removed. Nothing was deleted.', 'delete-duplicate-posts' ),
+            intval( $dispcount )
+         );
+        return $json_response;
+    }
+
+    /**
      * Gather everything the status email needs into a single data array.
      *
-     * @param int    $dispcount   Number of duplicates deleted in this run.
+     * @param int    $dispcount   Number of duplicates deleted (or reported) in this run.
      * @param string $blogurl     Site URL (already escaped via esc_url()).
      * @param array  $type_counts Map of post type slug => number deleted.
      * @param bool   $manualrun   True when triggered manually, false for the cron job.
      * @param array  $options     Plugin options.
+     * @param bool   $dry_run     True when this is a report-only cron summary.
      * @return array Data consumed by the subject/HTML/text builders.
      */
     private static function gather_status_email_data(
@@ -570,17 +766,19 @@ class DDP_Duplicates {
         $blogurl,
         $type_counts,
         $manualrun,
-        $options
+        $options,
+        $dry_run = false
     ) {
         $method = 'titlecompare';
         $details = array();
-        // What was removed, broken down by post type.
+        // What was removed (or would be), broken down by post type.
         $removed_value = number_format_i18n( $dispcount );
         $type_parts = self::format_type_counts( ( is_array( $type_counts ) ? $type_counts : array() ) );
         if ( !empty( $type_parts ) ) {
             $removed_value .= ' (' . implode( ', ', $type_parts ) . ')';
         }
-        $details[__( 'Removed', 'delete-duplicate-posts' )] = $removed_value;
+        $removed_label = ( $dry_run ? __( 'Would be removed', 'delete-duplicate-posts' ) : __( 'Removed', 'delete-duplicate-posts' ) );
+        $details[$removed_label] = $removed_value;
         $details[__( 'Matched on', 'delete-duplicate-posts' )] = self::get_detection_method_label( $method, $options );
         $pts = ( isset( $options['ddp_pts'] ) && is_array( $options['ddp_pts'] ) ? $options['ddp_pts'] : array() );
         if ( !empty( $pts ) ) {
@@ -588,13 +786,18 @@ class DDP_Duplicates {
         }
         $details[__( 'Kept', 'delete-duplicate-posts' )] = ( isset( $options['ddp_keep'] ) && 'latest' === $options['ddp_keep'] ? __( 'Newest copy', 'delete-duplicate-posts' ) : __( 'Oldest copy', 'delete-duplicate-posts' ) );
         $removal = __( 'Moved to Trash', 'delete-duplicate-posts' );
-        $details[__( 'Removal', 'delete-duplicate-posts' )] = $removal;
-        $details[__( 'Run type', 'delete-duplicate-posts' )] = ( $manualrun ? __( 'Manual run', 'delete-duplicate-posts' ) : __( 'Scheduled (cron) run', 'delete-duplicate-posts' ) );
+        $details[__( 'Removal', 'delete-duplicate-posts' )] = ( $dry_run ? sprintf( 
+            /* translators: %s: Trash or permanent label describing what would happen. */
+            __( 'Report only — would use: %s', 'delete-duplicate-posts' ),
+            $removal
+         ) : $removal );
+        $details[__( 'Run type', 'delete-duplicate-posts' )] = ( $dry_run ? __( 'Scheduled report-only (cron) run', 'delete-duplicate-posts' ) : (( $manualrun ? __( 'Manual run', 'delete-duplicate-posts' ) : __( 'Scheduled (cron) run', 'delete-duplicate-posts' ) )) );
         return array(
             'deleted'  => (int) $dispcount,
             'blogurl'  => $blogurl,
             'blogname' => wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ),
             'source'   => ( $manualrun ? 'manual' : 'cron' ),
+            'dry_run'  => (bool) $dry_run,
             'details'  => $details,
         );
     }
@@ -617,6 +820,9 @@ class DDP_Duplicates {
         }
         if ( 'excerptcompare' === $method ) {
             return __( 'Identical excerpt', 'delete-duplicate-posts' );
+        }
+        if ( 'contentcompare' === $method ) {
+            return __( 'Identical post content', 'delete-duplicate-posts' );
         }
         return __( 'Identical title', 'delete-duplicate-posts' );
     }
@@ -649,7 +855,17 @@ class DDP_Duplicates {
     public static function build_status_email_subject( $data ) {
         $deleted = number_format_i18n( $data['deleted'] );
         $blogname = $data['blogname'];
+        $dry_run = !empty( $data['dry_run'] );
         $source = ( 'manual' === $data['source'] ? __( 'manual run', 'delete-duplicate-posts' ) : __( 'scheduled run', 'delete-duplicate-posts' ) );
+        if ( $dry_run ) {
+            return sprintf(
+                // translators: 1: Number that would be removed, 2: Blog name, 3: Run type.
+                __( '[%2$s] %1$s duplicates would be removed (%3$s)', 'delete-duplicate-posts' ),
+                $deleted,
+                $blogname,
+                $source
+            );
+        }
         return sprintf(
             // translators: 1: Number removed, 2: Blog name, 3: Run type.
             __( '[%2$s] %1$s duplicates removed (%3$s)', 'delete-duplicate-posts' ),
@@ -672,13 +888,24 @@ class DDP_Duplicates {
         $blogname = $data['blogname'];
         $blogurl = $data['blogurl'];
         $deleted_num = number_format_i18n( $data['deleted'] );
-        // translators: %s: Number of duplicate posts deleted in this run.
-        $headline = sprintf( esc_html__( '%s duplicate posts removed', 'delete-duplicate-posts' ), '<span style="color:#2a7ae2;">' . esc_html( $deleted_num ) . '</span>' );
-        $intro = sprintf( 
-            // translators: %s: Blog name.
-            esc_html__( "Hi Admin, here's a summary of the latest cleanup on %s.", 'delete-duplicate-posts' ),
-            '<strong>' . esc_html( $blogname ) . '</strong>'
-         );
+        $dry_run = !empty( $data['dry_run'] );
+        if ( $dry_run ) {
+            // translators: %s: Number of duplicate posts that would be removed.
+            $headline = sprintf( esc_html__( '%s duplicate posts would be removed', 'delete-duplicate-posts' ), '<span style="color:#2a7ae2;">' . esc_html( $deleted_num ) . '</span>' );
+            $intro = sprintf( 
+                // translators: %s: Blog name.
+                esc_html__( "Hi Admin, here's a report-only scan summary for %s. Nothing was deleted.", 'delete-duplicate-posts' ),
+                '<strong>' . esc_html( $blogname ) . '</strong>'
+             );
+        } else {
+            // translators: %s: Number of duplicate posts deleted in this run.
+            $headline = sprintf( esc_html__( '%s duplicate posts removed', 'delete-duplicate-posts' ), '<span style="color:#2a7ae2;">' . esc_html( $deleted_num ) . '</span>' );
+            $intro = sprintf( 
+                // translators: %s: Blog name.
+                esc_html__( "Hi Admin, here's a summary of the latest cleanup on %s.", 'delete-duplicate-posts' ),
+                '<strong>' . esc_html( $blogname ) . '</strong>'
+             );
+        }
         $site_button_label = esc_html__( 'View your site', 'delete-duplicate-posts' );
         $summary_heading = esc_html__( 'Run summary', 'delete-duplicate-posts' );
         $detail_rows = '';
@@ -689,17 +916,29 @@ class DDP_Duplicates {
         foreach ( self::get_status_email_products() as $product ) {
             $product_rows .= '<tr>' . '<td style="padding:12px 0;border-top:1px solid #eceef1;">' . '<a href="' . esc_url( $product['url'] ) . '" target="_blank" rel="noopener noreferrer" style="color:#2a7ae2;text-decoration:none;font-weight:600;font-size:15px;">' . esc_html( $product['name'] ) . '</a>' . '<div style="color:#5b6470;font-size:13px;line-height:1.5;margin-top:4px;">' . esc_html( $product['desc'] ) . '</div>' . '</td>' . '</tr>';
         }
+        $plugin_page_url = DDP_Links::tracked_url(
+            'https://cleverplugins.com/delete-duplicate-posts/',
+            'email-status-plugin-page',
+            'email',
+            'status-report'
+        );
+        $brand_url = DDP_Links::tracked_url(
+            'https://cleverplugins.com/',
+            'email-status-brand',
+            'email',
+            'status-report'
+        );
         $from_the_maker = esc_html__( 'From the team behind Delete Duplicate Posts', 'delete-duplicate-posts' );
         $maker_intro = esc_html__( 'We build simple tools that keep WordPress sites clean, fast and secure. You might also like:', 'delete-duplicate-posts' );
         $why_receiving = sprintf( 
             // translators: %s: Linked plugin name "Delete Duplicate Posts".
             esc_html__( 'You are receiving this email because email notifications are enabled in %s.', 'delete-duplicate-posts' ),
-            '<a href="https://cleverplugins.com/delete-duplicate-posts/" target="_blank" rel="noopener noreferrer" style="color:#2a7ae2;text-decoration:none;">' . esc_html__( 'Delete Duplicate Posts', 'delete-duplicate-posts' ) . '</a>'
+            '<a href="' . esc_url( $plugin_page_url ) . '" target="_blank" rel="noopener noreferrer" style="color:#2a7ae2;text-decoration:none;">' . esc_html__( 'Delete Duplicate Posts', 'delete-duplicate-posts' ) . '</a>'
          );
         $made_by = sprintf( 
             // translators: %s: Linked text "cleverplugins.com".
             esc_html__( 'Made with care by %s', 'delete-duplicate-posts' ),
-            '<a href="https://cleverplugins.com" target="_blank" rel="noopener noreferrer" style="color:#2a7ae2;text-decoration:none;">' . esc_html__( 'cleverplugins.com', 'delete-duplicate-posts' ) . '</a>'
+            '<a href="' . esc_url( $brand_url ) . '" target="_blank" rel="noopener noreferrer" style="color:#2a7ae2;text-decoration:none;">' . esc_html__( 'cleverplugins.com', 'delete-duplicate-posts' ) . '</a>'
          );
         ob_start();
         ?>
@@ -812,15 +1051,27 @@ class DDP_Duplicates {
     public static function build_status_email_text( $data ) {
         $blogname = $data['blogname'];
         $deleted_num = number_format_i18n( $data['deleted'] );
+        $dry_run = !empty( $data['dry_run'] );
         $lines = array();
-        // translators: %s: Number of duplicate posts deleted in this run.
-        $lines[] = sprintf( __( '%s duplicate posts removed', 'delete-duplicate-posts' ), $deleted_num );
-        $lines[] = '';
-        $lines[] = sprintf( 
-            // translators: %s: Blog name.
-            __( "Hi Admin, here's a summary of the latest cleanup on %s.", 'delete-duplicate-posts' ),
-            $blogname
-         );
+        if ( $dry_run ) {
+            // translators: %s: Number of duplicate posts that would be removed.
+            $lines[] = sprintf( __( '%s duplicate posts would be removed', 'delete-duplicate-posts' ), $deleted_num );
+            $lines[] = '';
+            $lines[] = sprintf( 
+                // translators: %s: Blog name.
+                __( "Hi Admin, here's a report-only scan summary for %s. Nothing was deleted.", 'delete-duplicate-posts' ),
+                $blogname
+             );
+        } else {
+            // translators: %s: Number of duplicate posts deleted in this run.
+            $lines[] = sprintf( __( '%s duplicate posts removed', 'delete-duplicate-posts' ), $deleted_num );
+            $lines[] = '';
+            $lines[] = sprintf( 
+                // translators: %s: Blog name.
+                __( "Hi Admin, here's a summary of the latest cleanup on %s.", 'delete-duplicate-posts' ),
+                $blogname
+             );
+        }
         $lines[] = '';
         $lines[] = __( 'View your site:', 'delete-duplicate-posts' ) . ' ' . $data['blogurl'];
         $lines[] = '';
@@ -850,7 +1101,12 @@ class DDP_Duplicates {
         $lines[] = sprintf( 
             // translators: %s: "cleverplugins.com".
             __( 'Made with care by %s', 'delete-duplicate-posts' ),
-            'cleverplugins.com (https://cleverplugins.com)'
+            'cleverplugins.com (' . DDP_Links::tracked_url(
+                'https://cleverplugins.com/',
+                'email-status-brand',
+                'email',
+                'status-report'
+            ) . ')'
          );
         return implode( "\n", $lines );
     }
@@ -864,11 +1120,21 @@ class DDP_Duplicates {
         return array(array(
             'name' => __( 'WP Security Ninja', 'delete-duplicate-posts' ),
             'desc' => __( 'Complete WordPress protection — firewall, malware scanner, scheduled scans and security tests.', 'delete-duplicate-posts' ),
-            'url'  => 'https://wpsecurityninja.com/',
+            'url'  => DDP_Links::tracked_url(
+                'https://wpsecurityninja.com/',
+                'email-status-wsn',
+                'email',
+                'status-report'
+            ),
         ), array(
             'name' => __( 'SEO Booster', 'delete-duplicate-posts' ),
             'desc' => __( 'Find and fix the keywords your site already ranks for and grow your search traffic.', 'delete-duplicate-posts' ),
-            'url'  => 'https://cleverplugins.com/seo-booster/',
+            'url'  => DDP_Links::tracked_url(
+                'https://cleverplugins.com/seo-booster/',
+                'email-status-seo-booster',
+                'email',
+                'status-report'
+            ),
         ));
     }
 

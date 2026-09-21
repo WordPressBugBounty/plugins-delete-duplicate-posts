@@ -74,6 +74,112 @@ class DDP_Admin {
     }
 
     /**
+     * Render scheduled scan status above the live duplicates table.
+     *
+     * The existing table remains the single list of duplicates. The status
+     * explains whether scheduled scans only report or delete automatically.
+     *
+     * @param array<string,mixed> $options Plugin options.
+     * @return void
+     */
+    private static function render_scheduled_scan_summary( $options ) {
+        if ( empty( $options['ddp_enabled'] ) ) {
+            return;
+        }
+        $next_scheduled = wp_next_scheduled( 'ddp_cron' );
+        $cron_mode = ( isset( $options['ddp_cron_mode'] ) ? $options['ddp_cron_mode'] : 'report' );
+        $is_report_mode = 'report' === $cron_mode;
+        $last_dry_run = get_option( 'ddp_last_dry_run', array() );
+        $summary_class = ( $is_report_mode ? 'ddp-scan-summary--preview' : 'ddp-scan-summary--automatic' );
+        ?>
+		<section class="ddp-scan-summary <?php 
+        echo esc_attr( $summary_class );
+        ?>" aria-labelledby="ddp-scan-summary-title">
+			<div class="ddp-scan-summary__header">
+				<h3 id="ddp-scan-summary-title">
+					<?php 
+        echo ( $is_report_mode ? esc_html__( 'Scheduled preview', 'delete-duplicate-posts' ) : esc_html__( 'Scheduled automatic deletion', 'delete-duplicate-posts' ) );
+        ?>
+				</h3>
+				<?php 
+        if ( $is_report_mode ) {
+            ?>
+					<strong class="ddp-preview-status"><?php 
+            esc_html_e( 'Scheduled scans are preview only', 'delete-duplicate-posts' );
+            ?></strong>
+				<?php 
+        }
+        ?>
+			</div>
+
+			<ul class="ddp-scan-summary__meta">
+				<li>
+					<strong><?php 
+        esc_html_e( 'Scheduled mode:', 'delete-duplicate-posts' );
+        ?></strong>
+					<?php 
+        echo ( $is_report_mode ? esc_html__( 'Report only', 'delete-duplicate-posts' ) : esc_html__( 'Delete automatically', 'delete-duplicate-posts' ) );
+        ?>
+				</li>
+				<?php 
+        if ( $is_report_mode ) {
+            ?>
+					<li>
+						<strong><?php 
+            esc_html_e( 'Email report:', 'delete-duplicate-posts' );
+            ?></strong>
+						<?php 
+            echo ( !empty( $options['ddp_statusmail'] ) ? esc_html__( 'Enabled', 'delete-duplicate-posts' ) : esc_html__( 'Disabled', 'delete-duplicate-posts' ) );
+            ?>
+					</li>
+				<?php 
+        }
+        ?>
+				<?php 
+        if ( $next_scheduled ) {
+            ?>
+					<li>
+						<strong><?php 
+            esc_html_e( 'Next scheduled scan:', 'delete-duplicate-posts' );
+            ?></strong>
+						<?php 
+            echo esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $next_scheduled ) );
+            ?>
+					</li>
+				<?php 
+        }
+        ?>
+				<?php 
+        if ( $is_report_mode && is_array( $last_dry_run ) && !empty( $last_dry_run['time'] ) && isset( $last_dry_run['count'] ) ) {
+            ?>
+					<li>
+						<strong><?php 
+            esc_html_e( 'Last preview:', 'delete-duplicate-posts' );
+            ?></strong>
+						<?php 
+            printf( 
+                /* translators: 1: Duplicate count, 2: When the report ran. */
+                esc_html__( '%1$s duplicate(s) would be removed · ran %2$s', 'delete-duplicate-posts' ),
+                esc_html( number_format_i18n( (int) $last_dry_run['count'] ) ),
+                esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), (int) $last_dry_run['time'] ) )
+             );
+            ?>
+					</li>
+				<?php 
+        }
+        ?>
+			</ul>
+
+			<p class="ddp-scan-summary__settings-link">
+				<a class="ddp-tab-link" href="#settings-tab"><?php 
+        esc_html_e( 'Change scheduled scan settings', 'delete-duplicate-posts' );
+        ?></a>
+			</p>
+		</section>
+		<?php 
+    }
+
+    /**
      * Enqueues scripts and styles
      *
      * @author   Lars Koudal
@@ -86,13 +192,11 @@ class DDP_Admin {
         $screen = get_current_screen();
         if ( is_object( $screen ) && 'tools_page_delete-duplicate-posts' === $screen->id ) {
             $pluginver = DDP_Settings::get_plugin_version();
+            $stylesheet_path = DDP_PLUGIN_DIR . 'css/delete-duplicate-posts.css';
+            $script_path = DDP_PLUGIN_DIR . 'js/delete-duplicate-posts.js';
+            $stylesheet_ver = ( is_readable( $stylesheet_path ) ? $pluginver . '.' . filemtime( $stylesheet_path ) : $pluginver );
+            $script_ver = ( is_readable( $script_path ) ? $pluginver . '.' . filemtime( $script_path ) : $pluginver );
             wp_enqueue_script( 'jquery' );
-            wp_enqueue_style(
-                'delete-duplicate-posts',
-                plugins_url( '/css/delete-duplicate-posts.css', DDP_PLUGIN_FILE ),
-                array(),
-                $pluginver
-            );
             wp_enqueue_script(
                 'dataTables',
                 // Unique handle for your script
@@ -111,39 +215,91 @@ class DDP_Admin {
                 array(),
                 $pluginver
             );
+            wp_enqueue_style(
+                'delete-duplicate-posts',
+                plugins_url( '/css/delete-duplicate-posts.css', DDP_PLUGIN_FILE ),
+                array('dataTables'),
+                $stylesheet_ver
+            );
             wp_register_script(
                 'delete-duplicate-posts',
                 plugins_url( '/js/delete-duplicate-posts.js', DDP_PLUGIN_FILE ),
                 array('jquery', 'dataTables'),
-                $pluginver,
+                $script_ver,
                 true
             );
+            $options = DDP_Settings::get_options();
+            $delete_mode = 'trash';
+            $keep = ( isset( $options['ddp_keep'] ) ? $options['ddp_keep'] : 'oldest' );
             $js_vars = array(
-                'nonce'                => wp_create_nonce( 'cp_ddp_return_duplicates' ),
-                'loglines_nonce'       => wp_create_nonce( 'cp_ddp_return_loglines' ),
-                'deletedupes_nonce'    => wp_create_nonce( 'cp_ddp_delete_loglines' ),
-                'dismiss_notice_nonce' => wp_create_nonce( 'ddp_dismiss_notice' ),
-                'text_areyousure'      => __( 'Are you sure you want to delete duplicates? There is no undo feature.', 'delete-duplicate-posts' ),
-                'text_selectsomething' => __( 'You have to select which duplicates to delete. Tip: You can click the top or bottom checkbox to select all.', 'delete-duplicate-posts' ),
-                'fromUrlTitle'         => __( 'From URL', 'delete-duplicate-posts' ),
-                'targetUrlTitle'       => __( 'Target URL', 'delete-duplicate-posts' ),
-                'refreshingText'       => __( 'Refreshing...', 'delete-duplicate-posts' ),
-                'refreshText'          => __( 'Refresh', 'delete-duplicate-posts' ),
-                'errorDetailsText'     => __( 'Error details: ', 'delete-duplicate-posts' ),
-                'redirectsErrorText'   => __( 'Redirects DataTables error occurred. ', 'delete-duplicate-posts' ),
-                'processingMessage'    => __( 'Looking for duplicates', 'delete-duplicate-posts' ),
-                'requestTimeText'      => __( 'Request: ', 'delete-duplicate-posts' ),
-                'failedToLoadDataText' => __( 'Failed to load data. ', 'delete-duplicate-posts' ),
-                'duplicateTitle'       => __( 'Duplicate', 'delete-duplicate-posts' ),
-                'originalTitle'        => __( 'Original', 'delete-duplicate-posts' ),
-                'selectRowAlert'       => __( 'Please select at least one row to delete.', 'delete-duplicate-posts' ),
-                'serverResponseText'   => __( 'Response from the server: ', 'delete-duplicate-posts' ),
-                'errorOccurredText'    => __( 'An error occurred: ', 'delete-duplicate-posts' ),
-                'deleteSelectedText'   => __( 'Delete Selected', 'delete-duplicate-posts' ),
-                'selectVisibleText'    => __( 'Select Visible', 'delete-duplicate-posts' ),
-                'selectNoneText'       => __( 'Select None', 'delete-duplicate-posts' ),
-                'dataTablesErrorText'  => __( 'DataTables error occurred. ', 'delete-duplicate-posts' ),
-                'unknownErrorText'     => __( 'Unknown error occurred', 'delete-duplicate-posts' ),
+                'nonce'                          => wp_create_nonce( 'cp_ddp_return_duplicates' ),
+                'loglines_nonce'                 => wp_create_nonce( 'cp_ddp_return_loglines' ),
+                'deletedupes_nonce'              => wp_create_nonce( 'cp_ddp_delete_loglines' ),
+                'dismiss_notice_nonce'           => wp_create_nonce( 'ddp_dismiss_notice' ),
+                'text_areyousure'                => __( 'Are you sure you want to delete duplicates? There is no undo feature.', 'delete-duplicate-posts' ),
+                'text_selectsomething'           => __( 'You have to select which duplicates to delete. Tip: You can click the top or bottom checkbox to select all.', 'delete-duplicate-posts' ),
+                'fromUrlTitle'                   => __( 'From URL', 'delete-duplicate-posts' ),
+                'targetUrlTitle'                 => __( 'Target URL', 'delete-duplicate-posts' ),
+                'refreshingText'                 => __( 'Refreshing...', 'delete-duplicate-posts' ),
+                'refreshText'                    => __( 'Refresh', 'delete-duplicate-posts' ),
+                'errorDetailsText'               => __( 'Error details: ', 'delete-duplicate-posts' ),
+                'redirectsErrorText'             => __( 'Redirects DataTables error occurred. ', 'delete-duplicate-posts' ),
+                'processingMessage'              => __( 'Looking for duplicates', 'delete-duplicate-posts' ),
+                'requestTimeText'                => __( 'Request: ', 'delete-duplicate-posts' ),
+                'failedToLoadDataText'           => __( 'Failed to load data. ', 'delete-duplicate-posts' ),
+                'duplicateTitle'                 => __( 'Remove', 'delete-duplicate-posts' ),
+                'originalTitle'                  => __( 'Keep', 'delete-duplicate-posts' ),
+                'selectDuplicateText'            => __( 'Select duplicate: %s', 'delete-duplicate-posts' ),
+                'selectRowAlert'                 => __( 'Please select at least one row to delete.', 'delete-duplicate-posts' ),
+                'serverResponseText'             => __( 'Response from the server: ', 'delete-duplicate-posts' ),
+                'errorOccurredText'              => __( 'An error occurred: ', 'delete-duplicate-posts' ),
+                'deleteSelectedText'             => __( 'Delete Selected', 'delete-duplicate-posts' ),
+                'selectVisibleText'              => __( 'Select Visible', 'delete-duplicate-posts' ),
+                'selectNoneText'                 => __( 'Select None', 'delete-duplicate-posts' ),
+                'selectedSingularText'           => __( '%d duplicate selected', 'delete-duplicate-posts' ),
+                'selectedPluralText'             => __( '%d duplicates selected', 'delete-duplicate-posts' ),
+                'deleteSuccessTrashSingular'     => __( '%d duplicate moved to Trash. You can restore it from WordPress Trash.', 'delete-duplicate-posts' ),
+                'deleteSuccessTrashPlural'       => __( '%d duplicates moved to Trash. You can restore them from WordPress Trash.', 'delete-duplicate-posts' ),
+                'deleteSuccessPermanentSingular' => __( '%d duplicate permanently deleted.', 'delete-duplicate-posts' ),
+                'deleteSuccessPermanentPlural'   => __( '%d duplicates permanently deleted.', 'delete-duplicate-posts' ),
+                'unsavedSettingsText'            => __( 'You have unsaved changes.', 'delete-duplicate-posts' ),
+                'logLoadFailedText'              => __( 'The activity log could not be loaded. Refresh the page and try again.', 'delete-duplicate-posts' ),
+                'dataTablesErrorText'            => __( 'DataTables error occurred. ', 'delete-duplicate-posts' ),
+                'unknownErrorText'               => __( 'Unknown error occurred', 'delete-duplicate-posts' ),
+                'deleteMode'                     => $delete_mode,
+                'keepPreference'                 => $keep,
+                'deleteModalTitle'               => __( 'Confirm deletion', 'delete-duplicate-posts' ),
+                'deleteModalCountSingular'       => __( 'You are about to delete %d duplicate post.', 'delete-duplicate-posts' ),
+                'deleteModalCountPlural'         => __( 'You are about to delete %d duplicate posts.', 'delete-duplicate-posts' ),
+                'deleteModalTrash'               => __( 'Action: move to Trash (recoverable from WordPress Trash).', 'delete-duplicate-posts' ),
+                'deleteModalPermanent'           => __( 'Action: permanently delete. This cannot be undone.', 'delete-duplicate-posts' ),
+                'deleteModalKeepOldest'          => __( 'Keeping the oldest original in each pair.', 'delete-duplicate-posts' ),
+                'deleteModalKeepLatest'          => __( 'Keeping the latest original in each pair.', 'delete-duplicate-posts' ),
+                'deleteModalPreview'             => __( 'Examples:', 'delete-duplicate-posts' ),
+                'deleteModalMore'                => __( '…and %d more.', 'delete-duplicate-posts' ),
+                'deleteModalConfirm'             => __( 'Confirm delete', 'delete-duplicate-posts' ),
+                'deleteModalCancel'              => __( 'Cancel', 'delete-duplicate-posts' ),
+                'deleteModalArrow'               => __( '→ keep', 'delete-duplicate-posts' ),
+                'deletingText'                   => __( 'Deleting…', 'delete-duplicate-posts' ),
+                'redirectMoveNonce'              => wp_create_nonce( 'ddp_redirect_move' ),
+                'redirectMoveConfirm'            => __( 'Move built-in redirects into the Redirection “Delete Duplicate Posts” group and remove them here? Redirects that fail to move stay in the built-in list.', 'delete-duplicate-posts' ),
+                'redirectMovePreview'            => __( 'Move %1$d built-in redirect(s) into the Redirection “Delete Duplicate Posts” group and remove them here. %2$d are already in that group and will only be removed here. Redirects that fail to move stay in the built-in list. Continue?', 'delete-duplicate-posts' ),
+                'redirectMoveWorking'            => __( 'Moving redirects…', 'delete-duplicate-posts' ),
+                'redirectMoveDone'               => __( 'Move finished: %1$d moved, %2$d already in Redirection and removed here, %3$d failed and kept.', 'delete-duplicate-posts' ),
+                'redirectMoveButton'             => __( 'Move built-in redirects into Redirection (%d)', 'delete-duplicate-posts' ),
+                'redirectSelectAll'              => __( 'Select all', 'delete-duplicate-posts' ),
+                'redirectSelectNone'             => __( 'Select none', 'delete-duplicate-posts' ),
+                'redirectSelectPage'             => __( 'Select redirects on this page', 'delete-duplicate-posts' ),
+                'redirectSelectRedirect'         => __( 'Select redirect: %s', 'delete-duplicate-posts' ),
+                'redirectSelectedCount'          => __( '%d redirects selected', 'delete-duplicate-posts' ),
+                'redirectSelectAllWorking'       => __( 'Selecting redirects…', 'delete-duplicate-posts' ),
+                'redirectSelectAllFailed'        => __( 'Could not select every redirect. Try again.', 'delete-duplicate-posts' ),
+                'redirectSelectAllTruncated'     => __( 'Selected the first %d redirects. Delete those, then select all again for the rest.', 'delete-duplicate-posts' ),
+                'redirectDeleteConfirm'          => __( 'Delete the selected redirects? This cannot be undone.', 'delete-duplicate-posts' ),
+                'redirectDeleteWorking'          => __( 'Deleting redirects…', 'delete-duplicate-posts' ),
+                'redirectDeleteDone'             => __( 'Deleted %d redirect(s).', 'delete-duplicate-posts' ),
+                'redirectSelectNone'             => __( 'Select at least one redirect to delete.', 'delete-duplicate-posts' ),
+                'redirectActionFailed'           => __( 'The redirect action failed. Check the log and try again.', 'delete-duplicate-posts' ),
             );
             wp_localize_script( 'delete-duplicate-posts', 'cp_ddp', $js_vars );
             wp_enqueue_script( 'delete-duplicate-posts' );
@@ -272,7 +428,7 @@ class DDP_Admin {
             $screen->add_help_tab( array(
                 'id'      => 'ddp_help',
                 'title'   => __( 'Usage and FAQ', 'delete-duplicate-posts' ),
-                'content' => '<h4>' . __( 'What does this plugin do?', 'delete-duplicate-posts' ) . '</h4><p>' . __( 'Helps you clean duplicate posts from your blog. The plugin checks for blogposts on your blog with the same title.', 'delete-duplicate-posts' ) . '</p><p>' . __( "It can run automatically via WordPress's own internal CRON-system, or you can run it automatically.", 'delete-duplicate-posts' ) . '</p><p>' . __( 'It also has a nice feature that can send you an e-mail when Delete Duplicate Posts finds and deletes something (if you have turned on the CRON feature).', 'delete-duplicate-posts' ) . '</p><h4>' . __( 'Help! Something was deleted that was not supposed to be deleted!', 'delete-duplicate-posts' ) . '</h4><p>' . __( 'I am sorry for that, I can only recommend you restore the database you took just before you ran this plugin.', 'delete-duplicate-posts' ) . '</p><p>' . __( 'If you run this plugin, manually or automatically, it is at your OWN risk!', 'delete-duplicate-posts' ) . '</p><p>' . __( 'We have done our best to avoid deleting something that should not be deleted, but if it happens, there is nothing we can do to help you.', 'delete-duplicate-posts' ) . "</p><p><a href='https://cleverplugins.com' target='_blank'>cleverplugins.com</a>.</p>",
+                'content' => '<h4>' . __( 'What does this plugin do?', 'delete-duplicate-posts' ) . '</h4><p>' . __( 'Helps you clean duplicate posts from your blog. The plugin checks for blogposts on your blog with the same title.', 'delete-duplicate-posts' ) . '</p><p>' . __( "It can run automatically via WordPress's own internal CRON-system, or you can run it automatically.", 'delete-duplicate-posts' ) . '</p><p>' . __( 'It also has a nice feature that can send you an e-mail when Delete Duplicate Posts finds and deletes something (if you have turned on the CRON feature).', 'delete-duplicate-posts' ) . '</p><h4>' . __( 'Help! Something was deleted that was not supposed to be deleted!', 'delete-duplicate-posts' ) . '</h4><p>' . __( 'I am sorry for that, I can only recommend you restore the database you took just before you ran this plugin.', 'delete-duplicate-posts' ) . '</p><p>' . __( 'If you run this plugin, manually or automatically, it is at your OWN risk!', 'delete-duplicate-posts' ) . '</p><p>' . __( 'We have done our best to avoid deleting something that should not be deleted, but if it happens, there is nothing we can do to help you.', 'delete-duplicate-posts' ) . '</p><p><a href="' . esc_url( DDP_Links::tracked_url( 'https://cleverplugins.com', 'help-tab-footer' ) ) . '" target="_blank" rel="noopener noreferrer">cleverplugins.com</a>.</p>',
             ) );
         }
     }
@@ -314,8 +470,12 @@ class DDP_Admin {
             } else {
                 $options['ddp_enabled'] = false;
             }
+            $cron_mode = ( isset( $_POST['ddp_cron_mode'] ) ? sanitize_text_field( wp_unslash( $_POST['ddp_cron_mode'] ) ) : 'report' );
+            $options['ddp_cron_mode'] = DDP_Settings::normalize_cron_mode( $cron_mode );
+            $exclude_raw = ( isset( $_POST['ddp_exclude_ids'] ) ? wp_unslash( $_POST['ddp_exclude_ids'] ) : '' );
+            $exclude_ids = DDP_Settings::parse_exclude_ids( ( is_string( $exclude_raw ) ? $exclude_raw : '' ) );
+            $options['ddp_exclude_ids'] = ( !empty( $exclude_ids ) ? implode( ', ', $exclude_ids ) : '' );
             $options['ddp_statusmail'] = isset( $_POST['ddp_statusmail'] ) && 'on' === sanitize_text_field( wp_unslash( $_POST['ddp_statusmail'] ) );
-            $options['ddp_debug'] = isset( $_POST['ddp_debug'] ) && 'on' === sanitize_text_field( wp_unslash( $_POST['ddp_debug'] ) );
             if ( isset( $_POST['ddp_statusmail_recipient'] ) ) {
                 $recipients = DDP_Settings::parse_email_recipients( wp_unslash( $_POST['ddp_statusmail_recipient'] ) );
                 $options['ddp_statusmail_recipient'] = implode( ', ', $recipients );
@@ -332,15 +492,9 @@ class DDP_Admin {
             }
             $options['ddp_redirects'] = false;
             $options['ddp_pts'] = $posttypes;
-            $interval = ( isset( $options['ddp_schedule'] ) ? $options['ddp_schedule'] : 'hourly' );
-            if ( !$interval ) {
-                $interval = 'hourly';
-            }
-            $schedules = wp_get_schedules();
-            if ( !isset( $schedules[$interval] ) ) {
-                $interval = 'hourly';
-            }
             $previous_interval = ( isset( $options['last_interval'] ) ? $options['last_interval'] : '' );
+            $options = DDP_Settings::normalize_options( $options );
+            $interval = $options['ddp_schedule'];
             if ( !empty( $options['ddp_enabled'] ) ) {
                 $nextscheduled = wp_next_scheduled( 'ddp_cron' );
                 $interval_changed = $previous_interval !== $interval;
@@ -366,14 +520,18 @@ class DDP_Admin {
             //phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
             echo '<div class="updated"><p>' . esc_html( __( 'The log was cleared.', 'delete-duplicate-posts' ) ) . '</p></div>';
         }
-        // REACTIVATE THE DATABASE
+        // REPAIR PLUGIN DATA TABLES
         if ( isset( $_POST['ddp_reactivate'], $_POST['_wpnonce'] ) ) {
             $nonce = wp_unslash( $_POST['_wpnonce'] );
             if ( !wp_verify_nonce( $nonce, 'ddp_reactivate_nonce' ) ) {
                 die( esc_html( __( 'Whoops! Some error occured, try again, please!', 'delete-duplicate-posts' ) ) );
             }
+            if ( !current_user_can( 'manage_options' ) ) {
+                die( esc_html( __( 'You do not have sufficient permissions to perform this action.', 'delete-duplicate-posts' ) ) );
+            }
             DDP_Install::install( false );
-            DDP_Logger::log( 'Reinstalled databases' );
+            DDP_Logger::log( 'Repaired plugin data tables' );
+            echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Plugin data tables were repaired. Missing log and redirect tables were recreated. No posts were deleted.', 'delete-duplicate-posts' ) . '</p></div>';
         }
         $options = DDP_Settings::get_options();
         $is_pro = false;
@@ -388,6 +546,9 @@ class DDP_Admin {
 			<h1>Delete Duplicate Posts <span>v. <?php 
         echo esc_html( DDP_Settings::get_plugin_version() );
         ?></span></h1>
+			<p class="ddp-page-intro"><?php 
+        esc_html_e( 'Review duplicate pairs, choose what stays, and clean up with confidence.', 'delete-duplicate-posts' );
+        ?></p>
 			<?php 
         $totaldeleted = get_option( 'ddp_deleted_duplicates' );
         if ( isset( $_GET['welcome-message'] ) && 'true' === sanitize_text_field( wp_unslash( $_GET['welcome-message'] ) ) && !self::is_notice_dismissed( 'welcome' ) ) {
@@ -402,27 +563,29 @@ class DDP_Admin {
         }
         ?>
 
-			<h2 class="nav-tab-wrapper">
-				<a href="#duplicates-tab" class="nav-tab fs-tab nav-tab-active home"><?php 
+			<nav class="nav-tab-wrapper" role="tablist" aria-label="<?php 
+        esc_attr_e( 'Delete Duplicate Posts sections', 'delete-duplicate-posts' );
+        ?>">
+				<a id="ddp-tab-duplicates" href="#duplicates-tab" class="nav-tab fs-tab nav-tab-active home" role="tab" aria-selected="true" aria-controls="duplicates-tab"><?php 
         esc_html_e( 'Duplicates', 'delete-duplicate-posts' );
         ?></a>
-				<a href="#log-tab" class="nav-tab"><?php 
+				<a id="ddp-tab-log" href="#log-tab" class="nav-tab" role="tab" aria-selected="false" aria-controls="log-tab" tabindex="-1"><?php 
         esc_html_e( 'Log', 'delete-duplicate-posts' );
         ?></a>
-				<a href="#settings-tab" class="nav-tab"><?php 
+				<a id="ddp-tab-settings" href="#settings-tab" class="nav-tab" role="tab" aria-selected="false" aria-controls="settings-tab" tabindex="-1"><?php 
         esc_html_e( 'Settings', 'delete-duplicate-posts' );
         ?></a>
-				<a href="#redirects-tab" class="nav-tab<?php 
+				<a id="ddp-tab-redirects" href="#redirects-tab" class="nav-tab<?php 
         echo ( $show_redirects ? '' : ' pro' );
-        ?>"><?php 
+        ?>" role="tab" aria-selected="false" aria-controls="redirects-tab" tabindex="-1"><?php 
         esc_html_e( 'Redirects', 'delete-duplicate-posts' );
         ?></a>
-			</h2>
+			</nav>
 
 			<div class="ddp_content_wrapper">
 				<div class="ddp_content_cell">
 					<div id="delete-duplicate-posts-tabs">
-						<div id="duplicates-tab" class="tab-content">
+						<div id="duplicates-tab" class="tab-content" role="tabpanel" aria-labelledby="ddp-tab-duplicates">
 							<div id="ddp-dashboard">
 								<?php 
         if ( $options['ddp_enabled'] ) {
@@ -442,15 +605,71 @@ class DDP_Admin {
             wp_unschedule_hook( 'ddp_cron' );
         }
         $totaldeleted = get_option( 'ddp_deleted_duplicates' );
+        $is_report_preview = !empty( $options['ddp_enabled'] ) && isset( $options['ddp_cron_mode'] ) && 'report' === $options['ddp_cron_mode'];
+        $method_labels = array(
+            'titlecompare'   => __( 'Matching titles', 'delete-duplicate-posts' ),
+            'metacompare'    => __( 'Matching meta values', 'delete-duplicate-posts' ),
+            'excerptcompare' => __( 'Matching excerpts', 'delete-duplicate-posts' ),
+            'contentcompare' => __( 'Matching content', 'delete-duplicate-posts' ),
+        );
+        $current_method = ( isset( $options['ddp_method'], $method_labels[$options['ddp_method']] ) ? $method_labels[$options['ddp_method']] : $method_labels['titlecompare'] );
+        $keep_label = ( isset( $options['ddp_keep'] ) && 'latest' === $options['ddp_keep'] ? __( 'Keep newest', 'delete-duplicate-posts' ) : __( 'Keep oldest', 'delete-duplicate-posts' ) );
+        $is_permanent_removal = $is_pro && isset( $options['ddp_deletemode'] ) && 'permanent' === $options['ddp_deletemode'];
+        $removal_label = ( $is_permanent_removal ? __( 'Delete permanently', 'delete-duplicate-posts' ) : __( 'Move to Trash', 'delete-duplicate-posts' ) );
         ?>
+								<?php 
+        self::render_scheduled_scan_summary( $options );
+        ?>
+								<section class="ddp-current-duplicates" aria-labelledby="ddp-current-duplicates-title">
+									<header class="ddp-current-duplicates__header">
+										<h3 id="ddp-current-duplicates-title">
+											<?php 
+        echo ( $is_report_preview ? esc_html__( 'Duplicate preview', 'delete-duplicate-posts' ) : esc_html__( 'Current duplicates', 'delete-duplicate-posts' ) );
+        ?>
+										</h3>
+										<p>
+											<?php 
+        echo ( $is_report_preview ? esc_html__( 'This live table is your preview. Scheduled scans do not delete anything; deletion only happens if you select rows here and confirm the manual action.', 'delete-duplicate-posts' ) : esc_html__( 'This is a live review list. Nothing is removed until you select duplicates and confirm the manual deletion.', 'delete-duplicate-posts' ) );
+        ?>
+										</p>
+										<ul class="ddp-review-rules" aria-label="<?php 
+        esc_attr_e( 'Current duplicate review rules', 'delete-duplicate-posts' );
+        ?>">
+											<li><strong><?php 
+        esc_html_e( 'Match:', 'delete-duplicate-posts' );
+        ?></strong> <?php 
+        echo esc_html( $current_method );
+        ?></li>
+											<li><strong><?php 
+        esc_html_e( 'Keep:', 'delete-duplicate-posts' );
+        ?></strong> <?php 
+        echo esc_html( $keep_label );
+        ?></li>
+											<li><strong><?php 
+        esc_html_e( 'Manual removal:', 'delete-duplicate-posts' );
+        ?></strong> <?php 
+        echo esc_html( $removal_label );
+        ?></li>
+										</ul>
+										<p class="ddp-safety-note">
+											<strong><?php 
+        esc_html_e( 'Before deleting:', 'delete-duplicate-posts' );
+        ?></strong>
+											<?php 
+        echo ( $is_permanent_removal ? esc_html__( 'Create a current backup. Manual removals cannot be undone with this setting.', 'delete-duplicate-posts' ) : esc_html__( 'Create a current backup. Manual removals go to WordPress Trash and can be restored.', 'delete-duplicate-posts' ) );
+        ?>
+										</p>
+									</header>
 								<div class="statusdiv">
 									<div class="statusmessage"></div>
 									<div class="errormessage"></div>
+									<div id="ddp-operation-feedback" class="ddp-operation-feedback" role="status" aria-live="polite" hidden></div>
 									<div class="dupelist">
 										<div id="requestTime"></div>
 										<table id="ddp_dupetable" class="wp-list-table widefat fixed striped table-view-list"></table>
 									</div>
 								</div>
+								</section>
 								<?php 
         if ( false !== $totaldeleted && 0 < $totaldeleted && $display_ads && !self::is_notice_dismissed( 'leavereview', 180 ) ) {
             $totaldeleted = number_format_i18n( $totaldeleted );
@@ -469,7 +688,7 @@ class DDP_Admin {
             ?>
 										</p>
 										<p>
-											<a href="https://wordpress.org/support/plugin/delete-duplicate-posts/reviews/#new-post" class="button-secondary button button-small" target="_blank" rel="noopener"><?php 
+											<a href="https://wordpress.org/support/plugin/delete-duplicate-posts/reviews/#new-post" class="button-secondary button button-small" target="_blank" rel="noopener noreferrer"><?php 
             esc_html_e( 'Ok, you deserve it', 'delete-duplicate-posts' );
             ?></a>
 										</p>
@@ -491,33 +710,28 @@ class DDP_Admin {
             esc_html_e( 'Delete Duplicate Posts Pro', 'delete-duplicate-posts' );
             ?></h3>
 	<p class="ddp-pro-intro"><?php 
-            esc_html_e( 'Pro adds deeper cleanup controls for sites that need more than a basic title scan.', 'delete-duplicate-posts' );
+            esc_html_e( 'When matching titles is not enough, Pro helps you find the right duplicates and protect SEO when you remove them.', 'delete-duplicate-posts' );
             ?></p>
 	<ul class="linklist">
 		<li><strong><?php 
-            esc_html_e( 'Delete permanently:', 'delete-duplicate-posts' );
+            esc_html_e( 'Match by content, excerpt, or custom fields:', 'delete-duplicate-posts' );
             ?></strong> <?php 
-            esc_html_e( 'Remove duplicates from the database instead of moving them to trash.', 'delete-duplicate-posts' );
+            esc_html_e( 'Find duplicates with identical body content, the same excerpt, or any post meta value—not only matching titles.', 'delete-duplicate-posts' );
             ?></li>
 		<li><strong><?php 
-            esc_html_e( '301 redirects:', 'delete-duplicate-posts' );
+            esc_html_e( 'Scan more than published posts:', 'delete-duplicate-posts' );
             ?></strong> <?php 
-            esc_html_e( 'Send visitors from deleted URLs to the original post.', 'delete-duplicate-posts' );
+            esc_html_e( 'Include drafts, scheduled, private, and other statuses in the same cleanup.', 'delete-duplicate-posts' );
             ?></li>
 		<li><strong><?php 
-            esc_html_e( 'Compare by meta:', 'delete-duplicate-posts' );
+            esc_html_e( 'Delete permanently when needed:', 'delete-duplicate-posts' );
             ?></strong> <?php 
-            esc_html_e( 'Find duplicates by SKU, custom fields, or any post meta value.', 'delete-duplicate-posts' );
+            esc_html_e( 'Skip the trash and remove duplicates from the database when you are sure.', 'delete-duplicate-posts' );
             ?></li>
 		<li><strong><?php 
-            esc_html_e( 'Any post status:', 'delete-duplicate-posts' );
+            esc_html_e( '301 redirects you can manage:', 'delete-duplicate-posts' );
             ?></strong> <?php 
-            esc_html_e( 'Include drafts, scheduled, private, and other statuses in the scan.', 'delete-duplicate-posts' );
-            ?></li>
-		<li><strong><?php 
-            esc_html_e( 'Redirect management:', 'delete-duplicate-posts' );
-            ?></strong> <?php 
-            esc_html_e( 'View and manage redirects created when duplicates are removed.', 'delete-duplicate-posts' );
+            esc_html_e( 'Send visitors from removed URLs to the post you kept, and review those redirects later.', 'delete-duplicate-posts' );
             ?></li>
 	</ul>
 
@@ -565,64 +779,90 @@ class DDP_Admin {
 							</div><!-- #dashboard -->
 						</div>
 
-						<div id="log-tab" class="tab-content" style="display: none;">
+						<div id="log-tab" class="tab-content" role="tabpanel" aria-labelledby="ddp-tab-log" hidden>
 							<div id="log">
-								<h3><?php 
-        esc_html_e( 'The Log', 'delete-duplicate-posts' );
+								<div class="ddp-section-heading">
+									<div>
+										<h3><?php 
+        esc_html_e( 'Activity log', 'delete-duplicate-posts' );
         ?></h3>
-								<div class="spinner is-active"></div>
-								<ul class="large-text" name="ddp_log" id="ddp_log"></ul>
-							</div>
-							<p>
-							<form method="post" id="ddp_clearlog">
-								<?php 
+										<p><?php 
+        esc_html_e( 'Recent scans, deletions, redirects, and email activity.', 'delete-duplicate-posts' );
+        ?></p>
+									</div>
+									<form method="post" id="ddp_clearlog">
+										<?php 
         wp_nonce_field( 'ddp_clearlog_nonce' );
         ?>
-								<input class="button-secondary" type="submit" name="ddp_clearlog" value="<?php 
-        esc_html_e( 'Reset log', 'delete-duplicate-posts' );
+										<input class="button button-secondary" type="submit" name="ddp_clearlog" value="<?php 
+        esc_attr_e( 'Clear activity log', 'delete-duplicate-posts' );
+        ?>" data-confirm="<?php 
+        esc_attr_e( 'Clear all activity log entries? This cannot be undone.', 'delete-duplicate-posts' );
         ?>" />
-							</form>
-							</p>
+									</form>
+								</div>
+								<div class="spinner is-active"></div>
+								<div class="ddp-log-viewport">
+									<table id="ddp_log" class="wp-list-table widefat fixed striped table-view-list">
+										<thead>
+											<tr>
+												<th scope="col" class="ddp-log-date"><?php 
+        esc_html_e( 'Date and time', 'delete-duplicate-posts' );
+        ?></th>
+												<th scope="col"><?php 
+        esc_html_e( 'Activity', 'delete-duplicate-posts' );
+        ?></th>
+											</tr>
+										</thead>
+										<tbody></tbody>
+									</table>
+									<p id="ddp-log-empty" class="ddp-empty-state" hidden><?php 
+        esc_html_e( 'No activity has been recorded yet.', 'delete-duplicate-posts' );
+        ?></p>
+								</div>
+							</div>
 						</div>
 
-						<div id="settings-tab" class="tab-content" style="display: none;">
+						<div id="settings-tab" class="tab-content" role="tabpanel" aria-labelledby="ddp-tab-settings" hidden>
 							<div id="ddp-configuration">
 								<h3><?php 
         esc_html_e( 'Settings', 'delete-duplicate-posts' );
         ?></h3>
-								<p>
-									<?php 
-        $nextscheduled = wp_next_scheduled( 'ddp_cron' );
-        if ( $nextscheduled ) {
-            ?>
-								<div class="notice notice-info is-dismissible">
-									<h3><span class="dashicons dashicons-saved"></span> <?php 
-            esc_html_e( 'Automatically Deleting Duplicates', 'delete-duplicate-posts' );
-            ?></h3>
-										<?php 
-            echo '<p class="cronstatus center">' . esc_html__( 'You have enabled automatic deletion, so I am running on automatic. I will take care of everything...', 'delete-duplicate-posts' ) . '</p>';
-            echo '<p class="center">';
-            printf( 
-                // translators: Showing when the next check happens and what the current time is
-                esc_html( __( 'Next automated check %1$s. Current time %2$s', 'delete-duplicate-posts' ) ),
-                '<strong>' . esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $nextscheduled ) ) . '</strong>',
-                '<strong>' . esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), time() ) ) . '</strong>'
-             );
-            echo '</p>';
-            ?>
+								<p class="ddp-section-intro"><?php 
+        esc_html_e( 'Configure what counts as a duplicate, what happens during cleanup, and whether scans run automatically.', 'delete-duplicate-posts' );
+        ?></p>
+								<div class="ddp-settings-nav" role="tablist" aria-label="<?php 
+        esc_attr_e( 'Settings groups', 'delete-duplicate-posts' );
+        ?>">
+									<button id="ddp-settings-tab-matching" type="button" class="ddp-settings-tab is-active" role="tab" aria-selected="true" aria-controls="ddp-settings-matching" data-ddp-settings-panel="ddp-settings-matching"><?php 
+        esc_html_e( 'Matching', 'delete-duplicate-posts' );
+        ?></button>
+									<button id="ddp-settings-tab-cleanup" type="button" class="ddp-settings-tab" role="tab" aria-selected="false" aria-controls="ddp-settings-cleanup" data-ddp-settings-panel="ddp-settings-cleanup" tabindex="-1"><?php 
+        esc_html_e( 'Cleanup', 'delete-duplicate-posts' );
+        ?></button>
+									<button id="ddp-settings-tab-automation" type="button" class="ddp-settings-tab" role="tab" aria-selected="false" aria-controls="ddp-settings-automation" data-ddp-settings-panel="ddp-settings-automation" tabindex="-1"><?php 
+        esc_html_e( 'Automation', 'delete-duplicate-posts' );
+        ?></button>
+									<button id="ddp-settings-tab-maintenance" type="button" class="ddp-settings-tab" role="tab" aria-selected="false" aria-controls="ddp-settings-maintenance" data-ddp-settings-panel="ddp-settings-maintenance" tabindex="-1"><?php 
+        esc_html_e( 'Support & maintenance', 'delete-duplicate-posts' );
+        ?></button>
 								</div>
-										<?php 
-        }
-        ?>
-							</p>
 							<form method="post" id="delete_duplicate_posts_options">
 								<?php 
         wp_nonce_field( 'ddp-update-options' );
         ?>
 								<table width="100%" cellspacing="2" cellpadding="5" class="form-table">
+									<tbody id="ddp-settings-matching" class="ddp-settings-panel" role="tabpanel" aria-labelledby="ddp-settings-tab-matching">
+									<tr class="ddp-settings-section">
+										<td colspan="2">
+											<h3><?php 
+        esc_html_e( 'What to scan', 'delete-duplicate-posts' );
+        ?></h3>
+										</td>
+									</tr>
 									<tr valign="top">
 										<th><label for="ddp_pts"><?php 
-        esc_html_e( 'Which post types?:', 'delete-duplicate-posts' );
+        esc_html_e( 'Post types', 'delete-duplicate-posts' );
         ?></label>
 										</th>
 										<td>
@@ -689,6 +929,25 @@ class DDP_Admin {
 											<p class="description">
 												<?php 
         esc_html_e( 'Choose which post types to scan for duplicates.', 'delete-duplicate-posts' );
+        ?>
+											</p>
+										</td>
+									</tr>
+
+									<tr valign="top">
+										<th><label for="ddp_exclude_ids"><?php 
+        esc_html_e( 'Protected post IDs', 'delete-duplicate-posts' );
+        ?></label></th>
+										<td>
+											<?php 
+        $exclude_ids_value = ( isset( $options['ddp_exclude_ids'] ) ? $options['ddp_exclude_ids'] : '' );
+        ?>
+											<textarea name="ddp_exclude_ids" id="ddp_exclude_ids" class="large-text code" rows="2" cols="50"><?php 
+        echo esc_textarea( $exclude_ids_value );
+        ?></textarea>
+											<p class="description">
+												<?php 
+        esc_html_e( 'Comma-separated post IDs to protect. They will never be listed for removal (manual or scheduled), but can still be kept as the original in a duplicate pair.', 'delete-duplicate-posts' );
         ?>
 											</p>
 										</td>
@@ -778,9 +1037,16 @@ class DDP_Admin {
         $comparemethod = 'titlecompare';
         global $ddp_fs;
         ?>
+									<tr class="ddp-settings-section">
+										<td colspan="2">
+											<h3><?php 
+        esc_html_e( 'How to identify duplicates', 'delete-duplicate-posts' );
+        ?></h3>
+										</td>
+									</tr>
 									<tr valign="top">
 										<th><?php 
-        esc_html_e( 'Comparison Method', 'delete-duplicate-posts' );
+        esc_html_e( 'Comparison method', 'delete-duplicate-posts' );
         ?></th>
 										<td>
 											<ul class="ddpcomparemethod">
@@ -810,9 +1076,6 @@ class DDP_Admin {
             ?> />
 															<?php 
             esc_html_e( 'Compare by meta tag', 'delete-duplicate-posts' );
-            ?>
-															<?php 
-            echo wp_kses_post( self::pro_badge() );
             ?>
 															<span class="optiondesc"><?php 
             esc_html_e( 'Compare by any meta tag.', 'delete-duplicate-posts' );
@@ -861,11 +1124,21 @@ class DDP_Admin {
 															<?php 
             esc_html_e( 'Compare by excerpt', 'delete-duplicate-posts' );
             ?>
-															<?php 
-            echo wp_kses_post( self::pro_badge() );
-            ?>
 															<span class="optiondesc"><?php 
             esc_html_e( 'Looks at the excerpt of the post. Posts with empty excerpts are never treated as duplicates.', 'delete-duplicate-posts' );
+            ?></span>
+														</label>
+													</li>
+													<li>
+														<label>
+															<input type="radio" name="ddp_method" value="contentcompare" <?php 
+            checked( 'contentcompare', $comparemethod );
+            ?> />
+															<?php 
+            esc_html_e( 'Compare by content', 'delete-duplicate-posts' );
+            ?>
+															<span class="optiondesc"><?php 
+            esc_html_e( 'Matches posts with identical body content (hash compare). Posts with empty content are never treated as duplicates.', 'delete-duplicate-posts' );
             ?></span>
 														</label>
 													</li>
@@ -886,15 +1159,29 @@ class DDP_Admin {
             echo wp_kses_post( self::pro_locked_row( __( 'Compare by excerpt', 'delete-duplicate-posts' ), __( 'Catch posts that share a title but differ in content by matching on the excerpt instead. Empty excerpts are ignored.', 'delete-duplicate-posts' ) ) );
             ?>
 													</li>
+													<li class="ddp-pro-teaser">
+														<?php 
+            echo wp_kses_post( self::pro_locked_row( __( 'Compare by content', 'delete-duplicate-posts' ), __( 'Find exact body clones even when titles differ. Empty content is ignored.', 'delete-duplicate-posts' ) ) );
+            ?>
+													</li>
 												<?php 
         }
         ?>
 											</ul>
 										</td>
 									</tr>
+									</tbody>
+									<tbody id="ddp-settings-cleanup" class="ddp-settings-panel" role="tabpanel" aria-labelledby="ddp-settings-tab-cleanup" hidden>
+									<tr class="ddp-settings-section">
+										<td colspan="2">
+											<h3><?php 
+        esc_html_e( 'What to keep / remove', 'delete-duplicate-posts' );
+        ?></h3>
+										</td>
+									</tr>
 									<tr>
 										<th><label for="ddp_keep"><?php 
-        esc_html_e( 'Delete which posts?:', 'delete-duplicate-posts' );
+        esc_html_e( 'Post to keep', 'delete-duplicate-posts' );
         ?></label></th>
 										<td>
 
@@ -934,7 +1221,7 @@ class DDP_Admin {
         ?>
 									<tr valign="top">
 										<th><?php 
-        esc_html_e( 'Deletion method:', 'delete-duplicate-posts' );
+        esc_html_e( 'Deletion method', 'delete-duplicate-posts' );
         ?></th>
 										<td>
 											<ul class="ddpcomparemethod">
@@ -988,28 +1275,108 @@ class DDP_Admin {
 										</td>
 									</tr>
 
+									<tr class="ddp-settings-section">
+										<td colspan="2">
+											<h3><?php 
+        esc_html_e( 'URL preservation', 'delete-duplicate-posts' );
+        ?></h3>
+										</td>
+									</tr>
 									<tr valign="top">
 										<th><?php 
-        esc_html_e( 'Enable 301 redirects?:', 'delete-duplicate-posts' );
-        ?> <?php 
-        echo wp_kses_post( self::pro_badge() );
+        esc_html_e( 'Preserve removed URLs with 301 redirects', 'delete-duplicate-posts' );
         ?></th>
 										<td>
 											<?php 
         if ( $is_pro ) {
             ?>
-												<label for="ddp_redirects">
-													<input type="checkbox" id="ddp_redirects" name="ddp_redirects"
-													<?php 
-            if ( true === $options['ddp_redirects'] ) {
-                echo 'checked="checked"';
-            }
+												<?php 
+            $redirects_enabled = !empty( $options['ddp_redirects'] );
+            $redirect_provider = ( isset( $options['ddp_redirect_provider'] ) ? $options['ddp_redirect_provider'] : 'builtin' );
+            $redirection_ok = class_exists( 'Red_Item' ) && class_exists( 'Red_Group' );
+            $provider_unavailable = 'redirection' === $redirect_provider && !$redirection_ok;
             ?>
-													>
+												<label for="ddp_redirects">
+													<input type="checkbox" id="ddp_redirects" name="ddp_redirects" <?php 
+            checked( $redirects_enabled );
+            ?>>
 													<span class="description"><?php 
-            esc_html_e( 'Automatically 301 redirect deleted posts to the original.', 'delete-duplicate-posts' );
+            esc_html_e( 'When a duplicate is removed, create a 301 redirect from its URL to the post you kept.', 'delete-duplicate-posts' );
             ?></span>
 												</label>
+												<div id="ddp-redirect-provider-wrap" class="ddp-redirect-provider-wrap" <?php 
+            echo ( $redirects_enabled ? '' : 'hidden' );
+            ?>>
+													<p><strong><?php 
+            esc_html_e( 'Store redirects in:', 'delete-duplicate-posts' );
+            ?></strong></p>
+													<ul class="ddpcomparemethod">
+														<li>
+															<label>
+																<input type="radio" name="ddp_redirect_provider" value="builtin" <?php 
+            checked( 'builtin', $redirect_provider );
+            ?> />
+																<?php 
+            esc_html_e( 'Delete Duplicate Posts (built in)', 'delete-duplicate-posts' );
+            ?>
+																<span class="optiondesc"><?php 
+            esc_html_e( 'Managed in this plugin’s Redirects tab.', 'delete-duplicate-posts' );
+            ?></span>
+															</label>
+														</li>
+														<?php 
+            if ( $redirection_ok ) {
+                ?>
+														<li>
+															<label>
+																<input type="radio" name="ddp_redirect_provider" value="redirection" <?php 
+                checked( 'redirection', $redirect_provider );
+                ?> />
+																<?php 
+                esc_html_e( 'Redirection plugin', 'delete-duplicate-posts' );
+                ?>
+																<span class="optiondesc"><?php 
+                esc_html_e( 'Stored in the Redirection “Delete Duplicate Posts” group and not listed here. Switching this setting does not move or delete existing records. Move on the Redirects tab only sends leftover built-in redirects into that group.', 'delete-duplicate-posts' );
+                ?></span>
+															</label>
+														</li>
+														<?php 
+            } else {
+                ?>
+														<li class="description">
+															<?php 
+                esc_html_e( 'Install and activate the Redirection plugin to store redirects there instead. Until then, new redirects use the built-in store.', 'delete-duplicate-posts' );
+                ?>
+															<?php 
+                if ( $provider_unavailable ) {
+                    ?>
+																<br /><strong><?php 
+                    esc_html_e( 'Your preference is Redirection, but it is not available right now. New redirects fall back to the built-in store until Redirection is active again.', 'delete-duplicate-posts' );
+                    ?></strong>
+															<?php 
+                }
+                ?>
+														</li>
+														<?php 
+            }
+            ?>
+													</ul>
+													<?php 
+            if ( 'builtin' === $redirect_provider || $provider_unavailable ) {
+                ?>
+													<p class="ddp-redirect-provider-actions">
+														<a class="button button-secondary" href="<?php 
+                echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=ddp_export_redirects' ), 'ddp_export_redirects' ) );
+                ?>">
+															<?php 
+                esc_html_e( 'Export managed redirects to CSV', 'delete-duplicate-posts' );
+                ?>
+														</a>
+													</p>
+													<?php 
+            }
+            ?>
+												</div>
 											<?php 
         }
         ?>
@@ -1018,7 +1385,7 @@ class DDP_Admin {
             ?>
 												<div class="ddp-pro-teaser">
 													<?php 
-            echo wp_kses_post( self::pro_locked_row( __( 'Automatically 301 redirect deleted posts to the original.', 'delete-duplicate-posts' ) ) );
+            echo wp_kses_post( self::pro_locked_row( __( 'Preserve traffic from removed URLs with 301 redirects', 'delete-duplicate-posts' ), __( 'Choose built-in storage, listed in this plugin, or the Redirection plugin. Redirects sent to Redirection are not listed here.', 'delete-duplicate-posts' ) ) );
             ?>
 												</div>
 											<?php 
@@ -1027,18 +1394,19 @@ class DDP_Admin {
 										</td>
 									</tr>
 
-									<tr>
+									</tbody>
+									<tbody id="ddp-settings-automation" class="ddp-settings-panel" role="tabpanel" aria-labelledby="ddp-settings-tab-automation" hidden>
+									<tr class="ddp-settings-section">
 										<td colspan="2">
-											<hr>
 											<h3><?php 
-        esc_html_e( 'Delete Duplicates Automatically', 'delete-duplicate-posts' );
+        esc_html_e( 'Scheduled scans & notifications', 'delete-duplicate-posts' );
         ?></h3>
 										</td>
 									</tr>
 
 									<tr valign="top">
 										<th><?php 
-        esc_html_e( 'Enable automatic deletion?:', 'delete-duplicate-posts' );
+        esc_html_e( 'Scheduled scans', 'delete-duplicate-posts' );
         ?>
 										</th>
 										<td><label for="ddp_enabled">
@@ -1051,15 +1419,54 @@ class DDP_Admin {
 																																										>
 												<p class="description">
 													<?php 
-        esc_html_e( 'Clean duplicates automatically.', 'delete-duplicate-posts' );
+        esc_html_e( 'Run a scheduled scan on the interval below. Choose report-only or automatic deletion in the next setting.', 'delete-duplicate-posts' );
         ?></p>
 											</label>
 										</td>
 									</tr>
 
-									<tr>
+									<tr valign="top" class="ddp-schedule-dependent">
+										<th><?php 
+        esc_html_e( 'Scheduled scan mode', 'delete-duplicate-posts' );
+        ?></th>
+										<td>
+											<?php 
+        $cron_mode_setting = ( isset( $options['ddp_cron_mode'] ) ? $options['ddp_cron_mode'] : 'report' );
+        ?>
+											<ul class="ddpcomparemethod">
+												<li>
+													<label>
+														<input type="radio" name="ddp_cron_mode" value="report" <?php 
+        checked( 'report', $cron_mode_setting );
+        ?> />
+														<?php 
+        esc_html_e( 'Report only (recommended)', 'delete-duplicate-posts' );
+        ?>
+														<span class="optiondesc"><?php 
+        esc_html_e( 'Scan on schedule, log and email what would be removed. Nothing is deleted.', 'delete-duplicate-posts' );
+        ?></span>
+													</label>
+												</li>
+												<li>
+													<label>
+														<input type="radio" name="ddp_cron_mode" value="delete" <?php 
+        checked( 'delete', $cron_mode_setting );
+        ?> />
+														<?php 
+        esc_html_e( 'Delete automatically', 'delete-duplicate-posts' );
+        ?>
+														<span class="optiondesc"><?php 
+        esc_html_e( 'Remove duplicates on schedule using your keep and deletion settings above.', 'delete-duplicate-posts' );
+        ?></span>
+													</label>
+												</li>
+											</ul>
+										</td>
+									</tr>
+
+									<tr class="ddp-schedule-dependent">
 										<th><label for="ddp_resultslimit"><?php 
-        esc_html_e( 'How many:', 'delete-duplicate-posts' );
+        esc_html_e( 'Maximum per scan', 'delete-duplicate-posts' );
         ?></label>
 										</th>
 										<td>
@@ -1106,9 +1513,9 @@ class DDP_Admin {
 										</td>
 									</tr>
 
-									<tr>
+									<tr class="ddp-schedule-dependent">
 										<th><label for="ddp_schedule"><?php 
-        esc_html_e( 'How often?:', 'delete-duplicate-posts' );
+        esc_html_e( 'Scan frequency', 'delete-duplicate-posts' );
         ?></label>
 										</th>
 										<td>
@@ -1137,7 +1544,7 @@ class DDP_Admin {
 											</select>
 											<p class="description">
 												<?php 
-        esc_html_e( 'How often should the cron job run?', 'delete-duplicate-posts' );
+        esc_html_e( 'How often should the scheduled scan run?', 'delete-duplicate-posts' );
         ?></p>
 										</td>
 									</tr>
@@ -1147,9 +1554,9 @@ class DDP_Admin {
 										</td>
 									</tr>
 
-									<tr>
+									<tr class="ddp-schedule-dependent">
 										<th><?php 
-        esc_html_e( 'Send status mail?:', 'delete-duplicate-posts' );
+        esc_html_e( 'Email reports', 'delete-duplicate-posts' );
         ?></th>
 										<td>
 											<label for="ddp_statusmail">
@@ -1171,9 +1578,9 @@ class DDP_Admin {
 										</td>
 									</tr>
 
-									<tr>
+									<tr class="ddp-schedule-dependent ddp-email-dependent">
 										<th><?php 
-        esc_html_e( 'Email recipient:', 'delete-duplicate-posts' );
+        esc_html_e( 'Email recipients', 'delete-duplicate-posts' );
         ?></th>
 										<td>
 											<label for="ddp_statusmail_recipient">
@@ -1191,86 +1598,84 @@ class DDP_Admin {
 
 
 
-									<tr>
-										<td colspan="2">
-											<hr>
-										</td>
-									</tr>
-
-									<tr>
-										<th><?php 
-        esc_html_e( 'Enable debug logging?:', 'delete-duplicate-posts' );
-        ?></th>
-										<td>
-											<label for="ddp_debug">
-												<input type="checkbox" id="ddp_debug" name="ddp_debug" 
-												<?php 
-        if ( isset( $options['ddp_debug'] ) && true === $options['ddp_debug'] ) {
-            echo 'checked="checked"';
-        }
-        ?>
-																																								>
-												<p class="description">
-													<?php 
-        esc_html_e( 'Should only be enabled if debugging a problem.', 'delete-duplicate-posts' );
-        ?>
-												</p>
-											</label>
-										</td>
-									</tr>
-									<th colspan=2><input type="submit" class="button-primary" name="delete_duplicate_posts_save" value="<?php 
-        esc_html_e( 'Save Settings', 'delete-duplicate-posts' );
-        ?>" /></th>
-									</tr>
+									</tbody>
 								</table>
+								<div class="ddp-settings-actions">
+									<span class="ddp-settings-dirty" role="status" aria-live="polite"></span>
+									<input type="submit" class="button button-primary" name="delete_duplicate_posts_save" value="<?php 
+        esc_attr_e( 'Save settings', 'delete-duplicate-posts' );
+        ?>" />
+								</div>
 							</form>
+							<section id="ddp-settings-maintenance" class="ddp-settings-panel ddp-maintenance-panel" role="tabpanel" aria-labelledby="ddp-settings-tab-maintenance" hidden>
+								<h3><?php 
+        esc_html_e( 'Support and maintenance', 'delete-duplicate-posts' );
+        ?></h3>
+								<p><?php 
+        esc_html_e( 'Email support is available to Pro customers.', 'delete-duplicate-posts' );
+        ?></p>
+								<p>
+									<?php 
+        esc_html_e( 'Free users:', 'delete-duplicate-posts' );
+        ?>
+									<a href="https://wordpress.org/support/plugin/delete-duplicate-posts/" target="_blank" rel="noopener noreferrer"><?php 
+        esc_html_e( 'Visit the WordPress.org support forum', 'delete-duplicate-posts' );
+        ?></a>
+								</p>
+								<hr />
+								<h4><?php 
+        esc_html_e( 'Repair plugin data tables', 'delete-duplicate-posts' );
+        ?></h4>
+								<p><?php 
+        esc_html_e( 'Recreate missing log and redirect tables used by this plugin. This does not delete posts or change duplicate settings.', 'delete-duplicate-posts' );
+        ?></p>
+								<form method="post" id="ddp_reactivate">
+									<?php 
+        wp_nonce_field( 'ddp_reactivate_nonce' );
+        ?>
+									<input
+										class="button button-secondary"
+										type="submit"
+										name="ddp_reactivate"
+										id="ddp_reactivate_submit"
+										value="<?php 
+        esc_attr_e( 'Repair plugin data tables', 'delete-duplicate-posts' );
+        ?>"
+										data-confirm="<?php 
+        esc_attr_e( 'Repair plugin data tables? This recreates missing Delete Duplicate Posts log and redirect tables. It does not delete any posts.', 'delete-duplicate-posts' );
+        ?>"
+									/>
+								</form>
+							</section>
 							</div><!-- #configuration -->
 						</div>
 
 
 						<div id="redirects-tab" class="tab-content<?php 
         echo ( $show_redirects ? '' : ' pro' );
-        ?>" style="display: none;">
+        ?>" role="tabpanel" aria-labelledby="ddp-tab-redirects" hidden>
 							<?php 
-        if ( $show_redirects ) {
+        $rendered_pro_redirects = false;
+        if ( !$rendered_pro_redirects ) {
             ?>
-								<h3><?php 
-            esc_html_e( 'Redirects', 'delete-duplicate-posts' );
+								<div class="ddp-redirects-upsell">
+									<h3><?php 
+            esc_html_e( 'URL protection for removed duplicates', 'delete-duplicate-posts' );
             ?></h3>
-								<p><?php 
-            esc_html_e( 'This table shows all redirects created by the plugin.', 'delete-duplicate-posts' );
+									<p><?php 
+            esc_html_e( 'Preserve traffic from removed URLs with 301 redirects. Built-in redirects are listed here. Redirects sent to the Redirection plugin are not.', 'delete-duplicate-posts' );
             ?></p>
-								<table id="ddp_redirtable" class="wp-list-table widefat fixed striped table-view-list">
-									<thead>
-										<tr>
-											<th><?php 
-            esc_html_e( 'ID', 'delete-duplicate-posts' );
-            ?></th>
-											<th><?php 
-            esc_html_e( 'From URL', 'delete-duplicate-posts' );
-            ?></th>
-											<th><?php 
-            esc_html_e( 'Target URL', 'delete-duplicate-posts' );
-            ?></th>
-										</tr>
-									</thead>
-									<tbody>
-										<!-- DataTables will populate this -->
-									</tbody>
-								</table>
-							<?php 
-        }
-        ?>
-							<?php 
-        if ( !$show_redirects ) {
+									<p>
+										<a class="button button-primary" href="<?php 
+            echo esc_url( ddp_fs()->get_upgrade_url() );
+            ?>">
+											<?php 
+            esc_html_e( 'Explore Pro URL protection', 'delete-duplicate-posts' );
             ?>
-								<h3><?php 
-            esc_html_e( 'Redirects', 'delete-duplicate-posts' );
-            ?></h3>
-								<p><?php 
-            esc_html_e( 'Redirects are a premium feature. Please upgrade to access this functionality.', 'delete-duplicate-posts' );
-            ?></p>
-							<?php 
+										</a>
+									</p>
+								</div>
+								<?php 
         }
         ?>
 						</div>
@@ -1280,6 +1685,33 @@ class DDP_Admin {
 
 				<?php 
         include_once DDP_PLUGIN_DIR . 'sidebar.php';
+        ?>
+
+				<div id="ddp-delete-dialog" class="ddp-modal" hidden>
+					<div class="ddp-modal__backdrop" data-ddp-modal-close="1"></div>
+					<div class="ddp-modal__panel" role="dialog" aria-modal="true" aria-labelledby="ddp-delete-dialog-title">
+						<h2 id="ddp-delete-dialog-title"><?php 
+        esc_html_e( 'Confirm deletion', 'delete-duplicate-posts' );
+        ?></h2>
+						<p id="ddp-delete-dialog-count"></p>
+						<p id="ddp-delete-dialog-method"></p>
+						<p id="ddp-delete-dialog-keep"></p>
+						<p class="ddp-modal__preview-label" id="ddp-delete-dialog-preview-label"></p>
+						<ul id="ddp-delete-dialog-list" class="ddp-modal__list"></ul>
+						<p id="ddp-delete-dialog-more" class="ddp-modal__more" hidden></p>
+						<div class="ddp-modal__actions">
+							<button type="button" class="button" id="ddp-delete-dialog-cancel"><?php 
+        esc_html_e( 'Cancel', 'delete-duplicate-posts' );
+        ?></button>
+							<button type="button" class="button button-primary ddp-delete-selected" id="ddp-delete-dialog-confirm"><?php 
+        esc_html_e( 'Confirm delete', 'delete-duplicate-posts' );
+        ?></button>
+						</div>
+					</div>
+				</div>
+				<div id="ddp-action-status" class="screen-reader-text" aria-live="polite"></div>
+
+				<?php 
         if ( function_exists( 'ddp_fs' ) ) {
             global $ddp_fs;
         }
@@ -1292,37 +1724,65 @@ class DDP_Admin {
 
 		<script>
 			jQuery(document).ready(function($) {
-				const navTabWrapper = $('.nav-tab-wrapper');
-				const currentTabs = $('.nav-tab-wrapper a');
+				const currentTabs = $('.nav-tab-wrapper [role="tab"]');
+				const availableTabs = currentTabs.not('.pro');
+				const tabPanels = $('#delete-duplicate-posts-tabs > .tab-content');
 
-				currentTabs.each(function() {
-					$(this).on('click', function(e) {
-						const href = $(this).attr('href');
+				function activateTab(tab, moveFocus) {
+					const href = tab.attr('href');
 
-						if (!href.startsWith('#')) {
-							e.preventDefault(); // Prevent default tab behavior for full URLs
-							window.location.href = href; // Load the page to the URL in the same window
-						} else {
-							e.preventDefault(); // Prevent default anchor behavior
+					currentTabs
+						.removeClass('nav-tab-active')
+						.attr({'aria-selected': 'false', 'tabindex': '-1'});
+					tab
+						.addClass('nav-tab-active')
+						.attr({'aria-selected': 'true', 'tabindex': '0'});
 
-							// Switch as a regular tab for href starting with '#'
-							currentTabs.removeClass('nav-tab-active');
-							$(this).addClass('nav-tab-active');
+					tabPanels.prop('hidden', true);
+					$(href).prop('hidden', false);
+					window.history.replaceState(null, '', href);
 
-							// Hide all tab content
-							$('.tab-content').hide();
+					if (moveFocus) {
+						tab.trigger('focus');
+					}
+				}
 
-							// Show the content for the clicked tab
-							$(href).show();
-						}
-					});
+				const requestedTab = window.location.hash;
+				const requestedLink = requestedTab ? currentTabs.filter('[href="' + requestedTab + '"]') : $();
+				if (requestedLink.length) {
+					activateTab(requestedLink, false);
+				} else {
+					activateTab(currentTabs.filter('.nav-tab-active').first(), false);
+				}
+
+				currentTabs.on('click', function(e) {
+					const tab = $(this);
+					if (tab.hasClass('pro')) {
+						return;
+					}
+					e.preventDefault();
+					activateTab(tab, false);
 				});
 
-				// Initially hide all tab content except the active one
-				$('.tab-content').hide();
-				$('.nav-tab-active').each(function() {
-					const activeHref = $(this).attr('href');
-					$(activeHref).show();
+				currentTabs.on('keydown', function(e) {
+					const keys = ['ArrowLeft', 'ArrowRight', 'Home', 'End'];
+					if (keys.indexOf(e.key) === -1) {
+						return;
+					}
+
+					e.preventDefault();
+					const currentIndex = availableTabs.index(this);
+					let nextIndex = currentIndex;
+					if ('Home' === e.key) {
+						nextIndex = 0;
+					} else if ('End' === e.key) {
+						nextIndex = availableTabs.length - 1;
+					} else if ('ArrowRight' === e.key) {
+						nextIndex = (currentIndex + 1) % availableTabs.length;
+					} else {
+						nextIndex = (currentIndex - 1 + availableTabs.length) % availableTabs.length;
+					}
+					activateTab(availableTabs.eq(nextIndex), true);
 				});
 			});
 		</script>

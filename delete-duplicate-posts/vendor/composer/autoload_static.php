@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit011b69449cca0613a375d6d6d222097e
+class ComposerStaticInit10aeeda008cc70423291f5db150f27b3
 {
     public static $files = array (
         '8d50dc88e56bace65e1e72f6017983ed' => __DIR__ . '/..' . '/freemius/wordpress-sdk/start.php',
@@ -15,8 +15,10 @@ class ComposerStaticInit011b69449cca0613a375d6d6d222097e
         'DeleteDuplicatePosts\\DDP_Admin' => __DIR__ . '/../..' . '/includes/class-ddp-admin.php',
         'DeleteDuplicatePosts\\DDP_Duplicates' => __DIR__ . '/../..' . '/includes/class-ddp-duplicates.php',
         'DeleteDuplicatePosts\\DDP_Install' => __DIR__ . '/../..' . '/includes/class-ddp-install.php',
+        'DeleteDuplicatePosts\\DDP_Links' => __DIR__ . '/../..' . '/includes/class-ddp-links.php',
         'DeleteDuplicatePosts\\DDP_Logger' => __DIR__ . '/../..' . '/includes/class-ddp-logger.php',
         'DeleteDuplicatePosts\\DDP_Plugin' => __DIR__ . '/../..' . '/includes/class-ddp-plugin.php',
+        'DeleteDuplicatePosts\\DDP_Redirect_Provider_Redirection' => __DIR__ . '/../..' . '/includes/class-ddp-redirect-provider-redirection.php',
         'DeleteDuplicatePosts\\DDP_Redirects' => __DIR__ . '/../..' . '/includes/class-ddp-redirects.php',
         'DeleteDuplicatePosts\\DDP_Settings' => __DIR__ . '/../..' . '/includes/class-ddp-settings.php',
     );
@@ -24,7 +26,7 @@ class ComposerStaticInit011b69449cca0613a375d6d6d222097e
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->classMap = ComposerStaticInit011b69449cca0613a375d6d6d222097e::$classMap;
+            $loader->classMap = ComposerStaticInit10aeeda008cc70423291f5db150f27b3::$classMap;
 
         }, null, ClassLoader::class);
     }
