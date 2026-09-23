@@ -38,6 +38,8 @@ class DDP_Settings {
 			'ddp_resultslimit'         => 0,
 			'ddp_enabled'              => 0,
 			'ddp_cron_mode'            => 'report',
+			'ddp_schedule'             => 'hourly',
+			'ddp_method'               => 'titlecompare',
 			'ddp_pstati'               => array( 'publish' ),
 			'ddp_redirects'            => 0,
 			'ddp_redirect_provider'    => 'builtin',
@@ -118,17 +120,43 @@ class DDP_Settings {
 	}
 
 	/**
+	 * Cron interval slugs registered by this plugin.
+	 *
+	 * @return string[]
+	 */
+	public static function plugin_cron_intervals() {
+		return array( '5min', '10min', '15min', '30min' );
+	}
+
+	/**
 	 * Normalize cron schedule slug against registered schedules.
+	 *
+	 * Plugin intervals are always accepted, even before `cron_schedules` is
+	 * registered. Before `init`, a well-formed slug is kept so third-party
+	 * intervals (e.g. monthly) are not reset to hourly on early reads.
 	 *
 	 * @param mixed $value Raw schedule key.
 	 * @return string
 	 */
 	public static function normalize_schedule( $value ) {
-		$interval  = is_string( $value ) ? $value : '';
-		$schedules = function_exists( 'wp_get_schedules' ) ? wp_get_schedules() : array();
-		if ( $interval && is_array( $schedules ) && isset( $schedules[ $interval ] ) ) {
+		$interval = is_string( $value ) ? sanitize_key( $value ) : '';
+		if ( '' === $interval ) {
+			return 'hourly';
+		}
+
+		if ( in_array( $interval, self::plugin_cron_intervals(), true ) ) {
 			return $interval;
 		}
+
+		$schedules = function_exists( 'wp_get_schedules' ) ? wp_get_schedules() : array();
+		if ( is_array( $schedules ) && isset( $schedules[ $interval ] ) ) {
+			return $interval;
+		}
+
+		if ( ! did_action( 'init' ) && (bool) preg_match( '/^[a-z0-9_-]+$/', $interval ) ) {
+			return $interval;
+		}
+
 		return 'hourly';
 	}
 
@@ -152,7 +180,7 @@ class DDP_Settings {
 			if ( '' === $type ) {
 				continue;
 			}
-			if ( function_exists( 'post_type_exists' ) && ! post_type_exists( $type ) ) {
+			if ( did_action( 'init' ) && function_exists( 'post_type_exists' ) && ! post_type_exists( $type ) ) {
 				continue;
 			}
 			$clean[] = $type;
@@ -173,6 +201,7 @@ class DDP_Settings {
 			$statuses = array();
 		}
 
+		$wp_ready   = (bool) did_action( 'init' );
 		$registered = function_exists( 'get_post_stati' ) ? get_post_stati() : array( 'publish' => true );
 		if ( ! is_array( $registered ) ) {
 			$registered = array( 'publish' => true );
@@ -184,7 +213,10 @@ class DDP_Settings {
 				continue;
 			}
 			$status = sanitize_key( (string) $status );
-			if ( '' === $status || ! array_key_exists( $status, $registered ) ) {
+			if ( '' === $status ) {
+				continue;
+			}
+			if ( $wp_ready && ! array_key_exists( $status, $registered ) ) {
 				continue;
 			}
 			$clean[] = $status;
@@ -264,6 +296,9 @@ class DDP_Settings {
 		$options['ddp_pstati']       = self::normalize_post_statuses( isset( $options['ddp_pstati'] ) ? $options['ddp_pstati'] : array() );
 		$options['ddp_cron_mode']    = self::normalize_cron_mode( isset( $options['ddp_cron_mode'] ) ? $options['ddp_cron_mode'] : 'report' );
 		$options['ddp_deletemode']   = self::normalize_deletemode( isset( $options['ddp_deletemode'] ) ? $options['ddp_deletemode'] : 'trash' );
+		$options['ddp_enabled']      = ! empty( $options['ddp_enabled'] );
+		$options['ddp_statusmail']   = ! empty( $options['ddp_statusmail'] );
+		$options['ddp_redirects']    = ! empty( $options['ddp_redirects'] );
 		$options['ddp_redirect_provider'] = self::normalize_redirect_provider(
 			isset( $options['ddp_redirect_provider'] ) ? $options['ddp_redirect_provider'] : 'builtin'
 		);

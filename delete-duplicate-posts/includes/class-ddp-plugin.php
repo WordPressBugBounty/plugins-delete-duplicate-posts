@@ -21,7 +21,7 @@ class DDP_Plugin {
             1,
             2
         );
-        DDP_Settings::get_options();
+        add_filter( 'cron_schedules', array(DDP_Install::class, 'add_cron_intervals') );
         add_action( 'wp_ajax_ddp_get_loglines', array(DDP_Logger::class, 'return_loglines_ajax') );
         add_action( 'wp_ajax_ddp_get_duplicates', array(DDP_Duplicates::class, 'return_duplicates_ajax') );
         add_action( 'init', array(__CLASS__, 'do_init') );
@@ -38,7 +38,6 @@ class DDP_Plugin {
         add_filter( 'wpmu_drop_tables', array(DDP_Install::class, 'on_delete_blog') );
         register_activation_hook( DDP_PLUGIN_FILE, array(DDP_Install::class, 'install') );
         add_action( 'ddp_cron', array(DDP_Duplicates::class, 'cleandupes') );
-        add_action( 'cron_schedules', array(DDP_Install::class, 'add_cron_intervals') );
     }
 
     /**

@@ -6,7 +6,7 @@ License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Requires at least: 4.7
 Tested up to: 7.1.1
-Stable tag: 5.2
+Stable tag: 5.2.1
 Requires PHP: 7.4
 
 Get rid of duplicate posts and pages (any post type) on your blog with manual or automatic modes.
@@ -81,6 +81,10 @@ Each built-in redirect is created in the Redirection â€œDelete Duplicate Postsâ€
 7. Pro: Redirects tab for the built-in store, with provider status, CSV export, and bulk deletion. Redirects stored in Redirection are not listed here.
 
 == Changelog ==
+
+= 5.2.1 =
+* 2026-09-23
+* Fixed: scan frequency and other settings now stay saved after reload. Custom intervals were reset to hourly, which also made the next scheduled scan time look wrong.
 
 = 5.2 =
 * 2026-09-18

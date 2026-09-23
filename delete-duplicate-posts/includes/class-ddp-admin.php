@@ -1410,13 +1410,9 @@ class DDP_Admin {
         ?>
 										</th>
 										<td><label for="ddp_enabled">
-												<input type="checkbox" id="ddp_enabled" name="ddp_enabled" 
-												<?php 
-        if ( true === $options['ddp_enabled'] ) {
-            echo 'checked="checked"';
-        }
-        ?>
-																																										>
+												<input type="checkbox" id="ddp_enabled" name="ddp_enabled" <?php 
+        checked( !empty( $options['ddp_enabled'] ) );
+        ?>>
 												<p class="description">
 													<?php 
         esc_html_e( 'Run a scheduled scan on the interval below. Choose report-only or automatic deletion in the next setting.', 'delete-duplicate-posts' );
@@ -1528,13 +1524,9 @@ class DDP_Admin {
                 ?>
 														<option value="<?php 
                 echo esc_attr( $key );
-                ?>" 
-														<?php 
-                if ( isset( $options['ddp_schedule'] ) && esc_attr( $key ) === $options['ddp_schedule'] ) {
-                    echo esc_html( 'selected="selected"' );
-                }
-                ?>
-																																					><?php 
+                ?>" <?php 
+                selected( ( isset( $options['ddp_schedule'] ) ? $options['ddp_schedule'] : '' ), $key );
+                ?>><?php 
                 echo esc_html( $sch['display'] );
                 ?></option>
 														<?php 
@@ -1560,15 +1552,9 @@ class DDP_Admin {
         ?></th>
 										<td>
 											<label for="ddp_statusmail">
-												<input type="checkbox" id="ddp_statusmail" name="ddp_statusmail" 
-												<?php 
-        if ( isset( $options['ddp_statusmail'] ) && true === $options['ddp_statusmail'] ) {
-            ?>
-																																													checked="checked" 
-																																													<?php 
-        }
-        ?>
-																																																							>
+												<input type="checkbox" id="ddp_statusmail" name="ddp_statusmail" <?php 
+        checked( !empty( $options['ddp_statusmail'] ) );
+        ?>>
 												<p class="description">
 													<?php 
         esc_html_e( 'Sends a status email if duplicates have been found.', 'delete-duplicate-posts' );
